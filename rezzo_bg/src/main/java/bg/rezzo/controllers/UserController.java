@@ -77,23 +77,24 @@ public class UserController {
 	
 	
 	@PostMapping("/reservation")
-	public void reserve(@RequestBody ReservationDTO reservation, HttpServletRequest request, HttpServletResponse response) throws SQLException, ReservationException, LoginException, IOException {
+	public boolean reserve(@RequestBody ReservationDTO reservation, HttpServletRequest request, HttpServletResponse response) throws SQLException, ReservationException, LoginException, IOException {
 		HttpSession session = request.getSession();
 		
 		if(session.getAttribute("userId") == null) {
 			response.setStatus(401);
 			//throw new LoginException("Please, login first!");
 			response.getWriter().println("Please, login first!");
-			return;
+			return false;
 		}
 		
-		boolean hasFreeTables = this.userDao.hasFreeTables(reservation.getPlaceName(),
-				reservation.getStart(), reservation.getEnd(), reservation.getNumberOfTables());
-		if(!hasFreeTables) {
+		long id = (Long) session.getAttribute("userId");
+		boolean isReservationSuccessful = this.userDao.makeReservation(reservation, id);
+		if(!isReservationSuccessful) {
 			throw new ReservationException("No enough tables!");
 		}
-		long id = (Long) session.getAttribute("userId");
 		
+		
+		return isReservationSuccessful;
 		
 	}
 	

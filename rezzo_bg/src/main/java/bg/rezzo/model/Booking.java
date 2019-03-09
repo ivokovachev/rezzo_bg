@@ -12,9 +12,6 @@ import lombok.Setter;
 public class Booking {
 	private long id;
 	private int numberOfTables;
-	private LocalDate date;
 	private Slot slot;
 	private User user;
-	private long placeId;
-	
 }

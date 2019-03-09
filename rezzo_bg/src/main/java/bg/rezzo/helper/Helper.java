@@ -28,22 +28,25 @@ public class Helper {
 	public static String INSERT_ADDRESS_QUERY = "insert into address "
 			+ "values(null, '', 'Bulgaria', ?)";
 	public static String INSERT_USER_QUERY = "insert into users "
-			+ "values(null, ?, ?, ?, ?, ?)";
+			+ "values(null, ?, ?, ?, ?, ?, 0)";
 	public static String GET_ALL_EVENTS_QUERY = "select e.id, e.date, e.event_url, e.event_description, e.event_title, p.name\r\n" + 
 			"from events e\r\n" + 
 			"join places p on (e.place_id = p.id);";
 	public static final String GET_ALL_OFFERS_QUERY = "select o.id, o.offer_description, o.offer_title, o.offer_url, p.name\r\n" + 
 			"from offers o\r\n" + 
 			"join places p on (o.place_id = p.id);";
-	public static final String GET_USER_BOOKINGS = "select b.id, b.number_of_tables, b.date, b.place_id, s.id, s.start, s.end, s.free_tables, s.discount\r\n" + 
-			"from slots s\r\n" + 
-			"join bookings b on (s.id = b.slot_id)\r\n" + 
-			"join places p on (b.place_id = p.id)\r\n" + 
-			"where b.user_id = ?;";
-	public static final String GET_SLOT_FREE_TABLES = "select s.free_tables\r\n" + 
+	public static final String GET_USER_BOOKINGS = "select b.id, b.number_of_tables, s.id, s.start, s.end, s.date, s.discount, s.free_tables, s.places_id, s.booking_id\r\n" + 
+			"from users u\r\n" + 
+			"join bookings b on (u.id = b.user_id)\r\n" + 
+			"join slots s on (b.slot_id = s.id)\r\n" + 
+			"where u.id = ?;";
+	public static final String GET_SLOTS = "select s.*\r\n" + 
 			"from places p\r\n" + 
-			"join restaurants r on (p.restaurant_id = r.id)\r\n" + 
-			"join restaurants_has_slots rs on (r.id = rs.restaurant_id)\r\n" + 
-			"join slots s on (rs.slot_id = s.id) \r\n" + 
-			"where p.name = ? and s.start = ?;";
+			"join slots s on (p.id = s.places_id)\r\n" + 
+			"where p.name = ? and s.date = ? and (s.start >= ? and s.end <= ?);";
+	public static final String INSERT_SLOT_QUERY = "insert into slots values(null, ?, ?, ?, ?, ?, \r\n" + 
+			"(select id\r\n" + 
+			"from places\r\n" + 
+			"where name = ?), ?);";
+	public static final String INSERT_BOOKING_QUERY = "insert into bookings values(null, ?, ?);";
 }

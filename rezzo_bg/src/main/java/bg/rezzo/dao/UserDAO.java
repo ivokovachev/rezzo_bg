@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import bg.rezzo.dto.BookingDTO;
 import bg.rezzo.dto.LoginDTO;
 import bg.rezzo.dto.RegistrationDTO;
+import bg.rezzo.dto.ReservationDTO;
 import bg.rezzo.helper.Helper;
 import bg.rezzo.model.Address;
 import bg.rezzo.model.Booking;
@@ -46,7 +47,7 @@ public class UserDAO {
 							rs.getString(6), rs.getString(8), rs.getString(7)));
 		}
 		
-		this.loadUserBookings(u.getId());
+//		this.loadUserBookings(u.getId());
 		
 		return u;
 	}
@@ -126,30 +127,105 @@ public class UserDAO {
 		st.setLong(1, id);
 		ResultSet rs = st.executeQuery();
 		while(rs.next()) {
-			bookings.add(new Booking(rs.getLong(1), rs.getInt(2), rs.getDate(3).toLocalDate(),
-					new Slot(rs.getLong(5), rs.getInt(8), rs.getDouble(9),
-							rs.getTime(6).toString(), rs.getTime(7).toString()), null, rs.getLong(4)));
+			bookings.add(new Booking(rs.getLong(1), rs.getInt(2),
+					new Slot(rs.getLong(3), rs.getInt(8), rs.getDouble(7), rs.getTime(4).toString(),
+							rs.getTime(5).toString(), rs.getDate(6).toLocalDate(), rs.getLong(9), rs.getLong(10)), null));
 		}
 		
 		return bookings;
 	}
 	
-	public boolean hasFreeTables(String placeName, String start, String end, int tables) throws SQLException {
-		Connection con = this.jdbcTemplate.getDataSource().getConnection();
-		PreparedStatement st = con.prepareStatement(Helper.GET_SLOT_FREE_TABLES);
-		st.setString(1, placeName);
-		st.setString(2, start);
+	public boolean makeReservation(ReservationDTO reservation, long id) throws SQLException {
+		List<Slot> slots = new LinkedList<Slot>();
+		Connection con = this.jdbcTemplate.getDataSource().getConnection();		
+		PreparedStatement st = con.prepareStatement(Helper.GET_SLOTS);
+		st.setString(1, reservation.getPlaceName());
+		st.setDate(2, java.sql.Date.valueOf(reservation.getDate()));
+		st.setString(3, reservation.getStart()+":00:00");
+		st.setString(4, reservation.getEnd()+":00:00");
 		ResultSet rs = st.executeQuery();
-		
-		int actualFreeTables = 0;
+
 		while(rs.next()) {
-			actualFreeTables = rs.getInt(1);
+			slots.add(new Slot(rs.getLong(1), rs.getInt(2), rs.getDouble(3),
+					rs.getTime(4).toString(), rs.getTime(5).toString(),
+					rs.getDate(6).toLocalDate(), rs.getLong(7), rs.getLong(8)));
+		}
+		System.out.println(slots.size());
+		if(slots.isEmpty()) {		
+			System.out.println("haha");
+			PreparedStatement insertBookingStatement = con.prepareStatement(Helper.INSERT_BOOKING_QUERY,
+					Statement.RETURN_GENERATED_KEYS);
+			insertBookingStatement.setInt(1, reservation.getNumberOfTables());
+			insertBookingStatement.setLong(2, id);
+			insertBookingStatement.executeUpdate();
+			
+			ResultSet rsKeys = insertBookingStatement.getGeneratedKeys();
+			rsKeys.next();
+			long bookingId = rsKeys.getLong(1);
+			this.insertSlots(reservation, bookingId);
+			return true;
+		} 
+		
+		System.out.println("gaga");
+		for(Slot slot : slots) {
+			if(slot.getFreeTables() < reservation.getNumberOfTables()) {
+				return false;
+			}
 		}
 		
-		return actualFreeTables > tables ? true : false;
+		PreparedStatement insertBookingStatement = con.prepareStatement(Helper.INSERT_BOOKING_QUERY,
+				Statement.RETURN_GENERATED_KEYS);
+		
+		insertBookingStatement.setInt(1, reservation.getNumberOfTables());
+		insertBookingStatement.setLong(2, id);
+		insertBookingStatement.executeUpdate();
+		ResultSet rsKeys = insertBookingStatement.getGeneratedKeys();
+		rsKeys.next();
+		long bookingId = rsKeys.getLong(1);
+		
+		int start = Integer.parseInt(reservation.getStart());
+		int end = Integer.parseInt(reservation.getEnd());
+		System.out.println(start);
+		System.out.println(end);
+		if(slots.size() < (end-start)) {
+			for(int i = start; i <= end-1; i++) {
+				boolean isPresented = false;
+				for(Slot s : slots) {
+					System.out.println("start:" + s.getStart());
+					if(i == Integer.parseInt(s.getStart().split(":")[0])+1) {
+						// da update-na v bazata
+						System.out.println("vleznaaa");
+						PreparedStatement ps = con.prepareStatement("update slots set"
+								+ " free_tables = ? where id = ?;");
+						ps.setInt(1, s.getFreeTables()-reservation.getNumberOfTables());
+						ps.setLong(2, s.getId());
+						ps.executeUpdate();
+						System.out.println("May stana! :D");
+						isPresented = true;
+					}
+				}
+				if(!isPresented) {
+					this.insertSlots(new ReservationDTO(reservation.getPlaceName(), reservation.getDate(),
+							new Integer(i).toString(), new Integer(i+1).toString(),
+							reservation.getNumberOfTables()), bookingId);
+				}
+			}
+		} else {
+			// da namalq masite na vsichki slotove i da zapisha promenite v bazata
+			for(Slot s : slots) {
+				PreparedStatement ps = con.prepareStatement("update slots set"
+						+ " free_tables = ? where id = ?;");
+				ps.setInt(1, s.getFreeTables()-reservation.getNumberOfTables());
+				ps.setLong(2, s.getId());
+				ps.executeUpdate();
+			}
+		}
+		
+		return true;
 	}
 	
 	 
+	
 	
 	@Autowired
 	private void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
@@ -162,13 +238,30 @@ public class UserDAO {
 		st.setLong(1, id);
 		ResultSet rs = st.executeQuery();
 		while(rs.next()) {
-			this.bookings.add(new Booking(rs.getLong(1), rs.getInt(2), rs.getDate(3).toLocalDate(),
-					new Slot(rs.getLong(5), rs.getInt(8), rs.getDouble(9),
-							rs.getTime(6).toString(), rs.getTime(7).toString()), null, rs.getLong(4)));
+			this.bookings.add(new Booking(rs.getLong(1), rs.getInt(2),
+					new Slot(rs.getLong(3), rs.getInt(8), rs.getDouble(7), rs.getTime(4).toString(),
+							rs.getTime(5).toString(), rs.getDate(6).toLocalDate(), rs.getLong(9), rs.getLong(10)), null));
 		}
 	}
 	
-	
+	private void insertSlots(ReservationDTO reservation, Long bookingId) throws SQLException {
+		Connection con = this.jdbcTemplate.getDataSource().getConnection();
+		int s = Integer.parseInt(reservation.getStart());
+		int e = Integer.parseInt(reservation.getEnd());
+		for(int i = 0; i < e-s; i++) {
+			Integer startTime = s + i - 1;
+			Integer endTime = startTime + 1;
+			PreparedStatement st = con.prepareStatement(Helper.INSERT_SLOT_QUERY);
+			st.setInt(1, 10 - reservation.getNumberOfTables());
+			st.setDouble(2, 0.25);
+			st.setTime(3, java.sql.Time.valueOf(startTime.toString()+":00:00"));
+			st.setTime(4, java.sql.Time.valueOf(endTime.toString()+":00:00"));
+			st.setDate(5, java.sql.Date.valueOf(reservation.getDate()));
+			st.setString(6, reservation.getPlaceName());
+			st.setLong(7, bookingId);
+			st.executeUpdate();
+		}
+	}
 	
 	
 	
