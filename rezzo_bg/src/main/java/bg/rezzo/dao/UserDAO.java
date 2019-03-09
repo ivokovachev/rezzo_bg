@@ -180,11 +180,19 @@ public class UserDAO {
 		
 		int start = Integer.parseInt(reservation.getStart());
 		int end = Integer.parseInt(reservation.getEnd());
-		if(slots.size() < (end-start)) {
+		int diff = end - start;
+		if(start > end) {
+			diff = end+24-end;
+		}
+		if(slots.size() < diff) {
 			for(int i = start; i <= end-1; i++) {
 				boolean isPresented = false;
 				for(Slot s : slots) {
-					if(i == Integer.parseInt(s.getStart().split(":")[0])+1) {
+					int j = i;
+					if(j >= 24) {
+						j -= 24;
+					}
+					if(j == Integer.parseInt(s.getStart().split(":")[0])+1) {
 						PreparedStatement ps = con.prepareStatement("update slots set"
 								+ " free_tables = ? where id = ?;");
 						ps.setInt(1, s.getFreeTables()-reservation.getNumberOfTables());
@@ -234,9 +242,16 @@ public class UserDAO {
 		Connection con = this.jdbcTemplate.getDataSource().getConnection();
 		int s = Integer.parseInt(reservation.getStart());
 		int e = Integer.parseInt(reservation.getEnd());
-		for(int i = 0; i < e-s; i++) {
+		int diff = e-s;
+		if(s > e) {
+			diff = e+24-s;
+		}
+		for(int i = 0; i < diff; i++) {
 			Integer startTime = s + i - 1;
 			Integer endTime = startTime + 1;
+			if(startTime >= 24) {
+				startTime -= 24;
+			}
 			PreparedStatement st = con.prepareStatement(Helper.INSERT_SLOT_QUERY);
 			st.setInt(1, 10 - reservation.getNumberOfTables());
 			st.setDouble(2, 0.25);
