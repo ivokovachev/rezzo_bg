@@ -67,12 +67,12 @@ public class Helper {
 			"join places p on (a.id = p.address_id)\r\n" + 
 			"join restaurants r on (p.restaurant_id = r.id)\r\n" + 
 			"join kitchens k on (r.kitchen_id = k.id)\r\n" + 
-			"where p.id = ?;"+
-			"join slots s on (p.id = s.places_id)\r\n" + 
-			"where p.name = ? and s.date = ? and (s.start >= ? and s.end <= ?);";
+			"where p.id = ?;";
 	public static final String INSERT_SLOT_QUERY = "insert into slots values(null, ?, ?, ?, ?, ?, \r\n" + 
 			"(select id\r\n" + 
 			"from places\r\n" + 
 			"where name = ?), ?);";
 	public static final String INSERT_BOOKING_QUERY = "insert into bookings values(null, ?, ?);";
+	public static final String UPDATE_SLOT_QUERY = "update slots set "
+			+ "free_tables = ? where id = ?;";
 }

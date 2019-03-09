@@ -10,6 +10,8 @@ import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.hibernate.hql.internal.ast.tree.UpdateStatement;
+import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -133,12 +135,15 @@ public class UserDAO {
 	
 	public boolean makeReservation(ReservationDTO reservation, long id) throws SQLException {
 		List<Slot> slots = new LinkedList<Slot>();
+		Integer reservationStart = Integer.parseInt(reservation.getStart())-1;
+		Integer reservationEnd = Integer.parseInt(reservation.getEnd())-1;
+		
 		Connection con = this.jdbcTemplate.getDataSource().getConnection();		
 		PreparedStatement st = con.prepareStatement(Helper.GET_SLOTS);
 		st.setString(1, reservation.getPlaceName());
 		st.setDate(2, java.sql.Date.valueOf(reservation.getDate()));
-		st.setString(3, reservation.getStart()+":00:00");
-		st.setString(4, reservation.getEnd()+":00:00");
+		st.setString(3, reservationStart.toString()+":00:00");
+		st.setString(4, reservationEnd.toString()+":00:00");
 		ResultSet rs = st.executeQuery();
 
 		while(rs.next()) {
@@ -193,8 +198,7 @@ public class UserDAO {
 						j -= 24;
 					}
 					if(j == Integer.parseInt(s.getStart().split(":")[0])+1) {
-						PreparedStatement ps = con.prepareStatement("update slots set"
-								+ " free_tables = ? where id = ?;");
+						PreparedStatement ps = con.prepareStatement(Helper.UPDATE_SLOT_QUERY);
 						ps.setInt(1, s.getFreeTables()-reservation.getNumberOfTables());
 						ps.setLong(2, s.getId());
 						ps.executeUpdate();
@@ -209,8 +213,7 @@ public class UserDAO {
 			}
 		} else {
 			for(Slot s : slots) {
-				PreparedStatement ps = con.prepareStatement("update slots set"
-						+ " free_tables = ? where id = ?;");
+				PreparedStatement ps = con.prepareStatement(Helper.UPDATE_SLOT_QUERY);
 				ps.setInt(1, s.getFreeTables()-reservation.getNumberOfTables());
 				ps.setLong(2, s.getId());
 				ps.executeUpdate();
@@ -219,8 +222,6 @@ public class UserDAO {
 		
 		return true;
 	}
-	
-	 
 	
 	
 	@Autowired
