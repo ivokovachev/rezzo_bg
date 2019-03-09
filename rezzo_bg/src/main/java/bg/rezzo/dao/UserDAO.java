@@ -45,7 +45,7 @@ public class UserDAO {
 							rs.getString(6), rs.getString(8), rs.getString(7)));
 		}
 		
-//		this.loadUserBookings(u.getId());
+		this.loadUserBookings(u.getId());
 		
 		return u;
 	}
@@ -125,9 +125,7 @@ public class UserDAO {
 		st.setLong(1, id);
 		ResultSet rs = st.executeQuery();
 		while(rs.next()) {
-			bookings.add(new Booking(rs.getLong(1), rs.getInt(2),
-					new Slot(rs.getLong(3), rs.getInt(8), rs.getDouble(7), rs.getTime(4).toString(),
-							rs.getTime(5).toString(), rs.getDate(6).toLocalDate(), rs.getLong(9), rs.getLong(10)), null));
+			bookings.add(new Booking(rs.getLong(1), rs.getInt(2), null));
 		}
 		
 		return bookings;
@@ -148,7 +146,7 @@ public class UserDAO {
 					rs.getTime(4).toString(), rs.getTime(5).toString(),
 					rs.getDate(6).toLocalDate(), rs.getLong(7), rs.getLong(8)));
 		}
-		System.out.println(slots.size());
+
 		if(slots.isEmpty()) {		
 			PreparedStatement insertBookingStatement = con.prepareStatement(Helper.INSERT_BOOKING_QUERY,
 					Statement.RETURN_GENERATED_KEYS);
@@ -160,6 +158,7 @@ public class UserDAO {
 			rsKeys.next();
 			long bookingId = rsKeys.getLong(1);
 			this.insertSlots(reservation, bookingId);
+			this.bookings.add(new Booking(bookingId, reservation.getNumberOfTables(), null));
 			return true;
 		} 
 		
@@ -185,7 +184,6 @@ public class UserDAO {
 			for(int i = start; i <= end-1; i++) {
 				boolean isPresented = false;
 				for(Slot s : slots) {
-					System.out.println("start:" + s.getStart());
 					if(i == Integer.parseInt(s.getStart().split(":")[0])+1) {
 						PreparedStatement ps = con.prepareStatement("update slots set"
 								+ " free_tables = ? where id = ?;");
@@ -202,7 +200,6 @@ public class UserDAO {
 				}
 			}
 		} else {
-			// da namalq masite na vsichki slotove i da zapisha promenite v bazata
 			for(Slot s : slots) {
 				PreparedStatement ps = con.prepareStatement("update slots set"
 						+ " free_tables = ? where id = ?;");
@@ -229,9 +226,7 @@ public class UserDAO {
 		st.setLong(1, id);
 		ResultSet rs = st.executeQuery();
 		while(rs.next()) {
-			this.bookings.add(new Booking(rs.getLong(1), rs.getInt(2),
-					new Slot(rs.getLong(3), rs.getInt(8), rs.getDouble(7), rs.getTime(4).toString(),
-							rs.getTime(5).toString(), rs.getDate(6).toLocalDate(), rs.getLong(9), rs.getLong(10)), null));
+			this.bookings.add(new Booking(rs.getLong(1), rs.getInt(2), null));
 		}
 	}
 	

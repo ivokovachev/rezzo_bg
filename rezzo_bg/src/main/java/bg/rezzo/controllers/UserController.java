@@ -77,14 +77,14 @@ public class UserController {
 	
 	
 	@PostMapping("/reservation")
-	public boolean reserve(@RequestBody ReservationDTO reservation, HttpServletRequest request, HttpServletResponse response) throws SQLException, ReservationException, LoginException, IOException {
+	public void reserve(@RequestBody ReservationDTO reservation, HttpServletRequest request, HttpServletResponse response) throws SQLException, ReservationException, LoginException, IOException {
 		HttpSession session = request.getSession();
 		
 		if(session.getAttribute("userId") == null) {
 			response.setStatus(401);
 			//throw new LoginException("Please, login first!");
 			response.getWriter().println("Please, login first!");
-			return false;
+			return;
 		}
 		
 		long id = (Long) session.getAttribute("userId");
@@ -92,10 +92,7 @@ public class UserController {
 		if(!isReservationSuccessful) {
 			throw new ReservationException("No enough tables!");
 		}
-		
-		
-		return isReservationSuccessful;
-		
+				
 	}
 	
 	

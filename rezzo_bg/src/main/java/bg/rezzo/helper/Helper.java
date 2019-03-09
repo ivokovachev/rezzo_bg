@@ -35,10 +35,9 @@ public class Helper {
 	public static final String GET_ALL_OFFERS_QUERY = "select o.id, o.offer_description, o.offer_title, o.offer_url, p.name\r\n" + 
 			"from offers o\r\n" + 
 			"join places p on (o.place_id = p.id);";
-	public static final String GET_USER_BOOKINGS = "select b.id, b.number_of_tables, s.id, s.start, s.end, s.date, s.discount, s.free_tables, s.places_id, s.booking_id\r\n" + 
+	public static final String GET_USER_BOOKINGS = "select b.id, b.number_of_tables\r\n" + 
 			"from users u\r\n" + 
 			"join bookings b on (u.id = b.user_id)\r\n" + 
-			"join slots s on (b.slot_id = s.id)\r\n" + 
 			"where u.id = ?;";
 	public static final String GET_SLOTS = "select s.*\r\n" + 
 			"from places p\r\n" + 

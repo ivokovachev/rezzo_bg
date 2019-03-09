@@ -1,7 +1,5 @@
 package bg.rezzo.model;
 
-import java.time.LocalDate;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +10,5 @@ import lombok.Setter;
 public class Booking {
 	private long id;
 	private int numberOfTables;
-	private Slot slot;
 	private User user;
 }
