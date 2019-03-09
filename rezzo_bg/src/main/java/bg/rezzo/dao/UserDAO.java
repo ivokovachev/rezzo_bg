@@ -10,13 +10,11 @@ import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.tomcat.jni.Time;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 
-import bg.rezzo.dto.BookingDTO;
 import bg.rezzo.dto.LoginDTO;
 import bg.rezzo.dto.RegistrationDTO;
 import bg.rezzo.dto.ReservationDTO;
@@ -152,7 +150,6 @@ public class UserDAO {
 		}
 		System.out.println(slots.size());
 		if(slots.isEmpty()) {		
-			System.out.println("haha");
 			PreparedStatement insertBookingStatement = con.prepareStatement(Helper.INSERT_BOOKING_QUERY,
 					Statement.RETURN_GENERATED_KEYS);
 			insertBookingStatement.setInt(1, reservation.getNumberOfTables());
@@ -166,7 +163,6 @@ public class UserDAO {
 			return true;
 		} 
 		
-		System.out.println("gaga");
 		for(Slot slot : slots) {
 			if(slot.getFreeTables() < reservation.getNumberOfTables()) {
 				return false;
@@ -185,22 +181,17 @@ public class UserDAO {
 		
 		int start = Integer.parseInt(reservation.getStart());
 		int end = Integer.parseInt(reservation.getEnd());
-		System.out.println(start);
-		System.out.println(end);
 		if(slots.size() < (end-start)) {
 			for(int i = start; i <= end-1; i++) {
 				boolean isPresented = false;
 				for(Slot s : slots) {
 					System.out.println("start:" + s.getStart());
 					if(i == Integer.parseInt(s.getStart().split(":")[0])+1) {
-						// da update-na v bazata
-						System.out.println("vleznaaa");
 						PreparedStatement ps = con.prepareStatement("update slots set"
 								+ " free_tables = ? where id = ?;");
 						ps.setInt(1, s.getFreeTables()-reservation.getNumberOfTables());
 						ps.setLong(2, s.getId());
 						ps.executeUpdate();
-						System.out.println("May stana! :D");
 						isPresented = true;
 					}
 				}
