@@ -43,6 +43,33 @@ public class Helper {
 			"from places p\r\n" + 
 			"join slots s on (p.id = s.places_id)\r\n" + 
 			"where p.name = ? and s.date = ? and (s.start >= ? and s.end <= ?);";
+	
+	public static final String GET_DETAILS_FOR_ALL_RESTAURANTS = "select p.id, p.name, k.name, k.id, p.rating from places p\r\n" + 
+			"join restaurants r on (r.id = p.restaurant_id)\r\n" + 
+			"join kitchens k  on (k.id = r.kitchen_id)\r\n" + 
+			"where restaurant_id is not null;";
+	
+	public static final String GET_DETAILS_FOR_ALL_CLUBS = "select p.id, p.name, m.genre, m.id, p.rating from places p\r\n" + 
+			"join clubs c on (c.id = p.club_id)\r\n" + 
+			"join music m on (m.id = c.music_id)\r\n" + 
+			"where club_id is not null;";
+	
+	public static final String GET_CLUB_DETAILS = "select p.id, p.name, p.start_working_day, p.end_working_day, p.rating, p.description, p.max_free_tables, a.street, a.country, ci.name, m.genre\r\n" + 
+			"from cities ci \r\n" + 
+			"join address a on (ci.id = a.city_id)\r\n" + 
+			"join places p on (a.id = p.address_id)\r\n" + 
+			"join clubs c on (p.club_id = c.id)\r\n" + 
+			"join music m on (c.music_id = m.id)\r\n" + 
+			"where p.id = ?;";
+	public static final String GET_RESTAURANT_DETAILS = "select p.id, p.name, p.start_working_day, p.end_working_day, p.rating, p.description, p.max_free_tables, a.street, a.country, ci.name, k.name\r\n" + 
+			"from cities ci \r\n" + 
+			"join address a on (ci.id = a.city_id)\r\n" + 
+			"join places p on (a.id = p.address_id)\r\n" + 
+			"join restaurants r on (p.restaurant_id = r.id)\r\n" + 
+			"join kitchens k on (r.kitchen_id = k.id)\r\n" + 
+			"where p.id = ?;"+
+			"join slots s on (p.id = s.places_id)\r\n" + 
+			"where p.name = ? and s.date = ? and (s.start >= ? and s.end <= ?);";
 	public static final String INSERT_SLOT_QUERY = "insert into slots values(null, ?, ?, ?, ?, ?, \r\n" + 
 			"(select id\r\n" + 
 			"from places\r\n" + 
