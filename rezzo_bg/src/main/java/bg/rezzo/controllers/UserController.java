@@ -87,14 +87,12 @@ public class UserController {
 			return;
 		}
 		
-		boolean hasFreeTables = this.userDao.hasFreeTables(reservation.getPlaceName(),
-				reservation.getStart(), reservation.getEnd(), reservation.getNumberOfTables());
-		if(!hasFreeTables) {
+		long id = (Long) session.getAttribute("userId");
+		boolean isReservationSuccessful = this.userDao.makeReservation(reservation, id);
+		if(!isReservationSuccessful) {
 			throw new ReservationException("No enough tables!");
 		}
-		long id = (Long) session.getAttribute("userId");
-		
-		
+				
 	}
 	
 	
