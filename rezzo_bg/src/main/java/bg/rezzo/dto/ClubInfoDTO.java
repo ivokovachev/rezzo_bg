@@ -1,5 +1,6 @@
-package bg.rezzo.model;
+package bg.rezzo.dto;
 
+import bg.rezzo.model.Address;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -7,8 +8,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class Place {
-	private long id;
+public class ClubInfoDTO {
+	private Long id;
 	private String name;
 	private String startWorkingDay;
 	private String endWorkingDay;

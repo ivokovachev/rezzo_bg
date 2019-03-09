@@ -8,9 +8,9 @@ import lombok.Setter;
 public class Club extends Place {
 	private String music;
 	
-	public Club(long id, String startWorkingDay, String endWorkingDay, double rating,
+	public Club(long id, String name, String startWorkingDay, String endWorkingDay, double rating,
 			String description, int maxFreeTables, Address address, String music) {
-		super(id, startWorkingDay, endWorkingDay, rating, description, maxFreeTables, address);
+		super(id, name, startWorkingDay, endWorkingDay, rating, description, maxFreeTables, address);
 		this.music = music;
 	}	
 	
