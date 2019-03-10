@@ -1,5 +1,9 @@
 package bg.rezzo.exception;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(HttpStatus.UNAUTHORIZED)
 public class LoginException extends Exception {
 
 	private static final long serialVersionUID = 8584950383961529462L;

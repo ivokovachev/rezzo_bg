@@ -9,16 +9,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import bg.rezzo.dao.UserDAO;
-import bg.rezzo.dto.BookingDTO;
 import bg.rezzo.dto.LoginDTO;
 import bg.rezzo.dto.RegistrationDTO;
 import bg.rezzo.dto.ReservationDTO;
@@ -35,8 +31,13 @@ public class UserController {
 	
 	
 	@PostMapping("/login")
-	public void login(@RequestBody LoginDTO user, HttpServletRequest request) throws SQLException {
+	public void login(@RequestBody LoginDTO user, HttpServletRequest request) throws SQLException, LoginException {
 		User u = this.userDao.login(user);
+		
+		if(u == null) {
+			throw new LoginException("Invalid login");
+		}
+		
 		HttpSession session = request.getSession();
 		session.setAttribute("userId", u.getId());
 	}

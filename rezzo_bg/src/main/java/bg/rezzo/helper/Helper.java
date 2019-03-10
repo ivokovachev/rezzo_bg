@@ -26,7 +26,7 @@ public class Helper {
 	public static final String INSERT_CITY_QUERY = "insert into cities "
 			+ "values(null, ?)";
 	public static final String INSERT_ADDRESS_QUERY = "insert into address "
-			+ "values(null, '', 'Bulgaria', ?)";
+			+ "values(null, ?, 'Bulgaria', ?)";
 	public static final String INSERT_USER_QUERY = "insert into users "
 			+ "values(null, ?, ?, ?, ?, ?, 0)";
 	public static final String GET_ALL_EVENTS_QUERY = "select e.id, e.date, e.event_url, e.event_description, e.event_title, p.name\r\n" + 

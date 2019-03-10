@@ -72,4 +72,40 @@ public class RestaurantDAO {
 	private void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 	}
+
+	public List<RestaurantDTO> getAllRestaurantsWithEvents() throws SQLException {
+		Connection con = this.jdbcTemplate.getDataSource().getConnection();
+		Statement st = con.createStatement();
+		ResultSet rs = st.executeQuery("select p.id, p.name, k.name, k.id, p.rating "
+				+ "from kitchens k "
+				+ "join restaurants r on (k.id = r.kitchen_id) "
+				+ "join places p on (r.id = p.restaurant_id) "
+				+ "join events e on (p.id = e.place_id)");
+		
+		List<RestaurantDTO> restaurants = new LinkedList<RestaurantDTO>();
+		while(rs.next()) {
+			restaurants.add(new RestaurantDTO(rs.getLong(1), rs.getString(2), rs.getString(3),
+					rs.getLong(4), rs.getDouble(5)));
+		}
+		
+		return restaurants;
+	}
+
+	public List<RestaurantDTO> getAllRestaurantsWithOffers() throws SQLException {
+		Connection con = this.jdbcTemplate.getDataSource().getConnection();
+		Statement st = con.createStatement();
+		ResultSet rs = st.executeQuery("select p.id, p.name, k.name, k.id, p.rating "
+				+ "from kitchens k "
+				+ "join restaurants r on (k.id = r.kitchen_id) "
+				+ "join places p on (r.id = p.restaurant_id) "
+				+ "join offers o on (p.id = o.place_id)");
+		
+		List<RestaurantDTO> offers = new LinkedList<RestaurantDTO>();
+		while(rs.next()) {
+			offers.add(new RestaurantDTO(rs.getLong(1), rs.getString(2), rs.getString(3),
+					rs.getLong(4), rs.getDouble(5)));
+		}
+		
+		return offers;
+	}
 }

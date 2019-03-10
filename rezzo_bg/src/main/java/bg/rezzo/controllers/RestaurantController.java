@@ -44,4 +44,15 @@ public class RestaurantController {
 				return null;
 			}
 		}
+	
+	@GetMapping("/restaurants/events")
+	public List<RestaurantDTO> getAllRestaurantsWithEvents() throws SQLException {
+		return this.restaurantDAO.getAllRestaurantsWithEvents();
+	}
+	
+	@GetMapping("/restaurants/offers")
+	public List<RestaurantDTO> getAllRestaurantsWithOffers() throws SQLException {
+		return this.restaurantDAO.getAllRestaurantsWithOffers();
+	}
+	
 }

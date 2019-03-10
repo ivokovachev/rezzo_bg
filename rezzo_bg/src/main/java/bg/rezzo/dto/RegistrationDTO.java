@@ -12,6 +12,7 @@ import lombok.Setter;
 public class RegistrationDTO {
 	private String email;
 	private String password;
+	private String street;
 	private String city;
 	private String telephone;
 	private LocalDate dateOfBirth;

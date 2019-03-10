@@ -10,10 +10,9 @@ import java.time.LocalDate;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.hibernate.hql.internal.ast.tree.UpdateStatement;
-import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 
@@ -35,10 +34,14 @@ public class UserDAO {
 	public UserDAO() throws SQLException {}
 	
 	public User login(LoginDTO user) throws SQLException {
+		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
 		Connection con = this.jdbcTemplate.getDataSource().getConnection();
 		PreparedStatement st = con.prepareStatement(Helper.QUERY);
 		st.setString(1, user.getEmail());
 		ResultSet rs = st.executeQuery();
+		
+
 		
 		User u = null;
 		while(rs.next()) {
@@ -47,7 +50,14 @@ public class UserDAO {
 							rs.getString(6), rs.getString(8), rs.getString(7)));
 		}
 		
-		this.loadUserBookings(u.getId());
+		boolean areTheSame = false;
+		if(u != null) {
+			areTheSame = passwordEncoder.matches(user.getPassword(), u.getPassword());
+		}
+		
+		if(u != null && areTheSame) {
+			this.loadUserBookings(u.getId());
+		}
 		
 		return u;
 	}
@@ -57,7 +67,6 @@ public class UserDAO {
 		PreparedStatement st = con.prepareStatement(Helper.GET_USER_PROFILE_QUERY);
 		st.setLong(1, id);
 		ResultSet rs = st.executeQuery();
-		
 		User u = null;
 		while(rs.next()) {
 			u = new User(rs.getLong(1), rs.getString(2), rs.getString(3),
@@ -69,6 +78,9 @@ public class UserDAO {
 	}
 	
 	public boolean registration(RegistrationDTO user) throws SQLException {
+		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+		String hashedPassword = passwordEncoder.encode(user.getPassword());
+		
 		List<String> emails = new LinkedList<String>();
 		Connection con = this.jdbcTemplate.getDataSource().getConnection();
 		con.setAutoCommit(false);
@@ -94,7 +106,8 @@ public class UserDAO {
 			
 			PreparedStatement insertAddressStatement = con.prepareStatement(Helper.INSERT_ADDRESS_QUERY,
 					Statement.RETURN_GENERATED_KEYS);
-			insertAddressStatement.setLong(1, primaryKey1);
+			insertAddressStatement.setString(1, user.getStreet());
+			insertAddressStatement.setLong(2, primaryKey1);
 			insertAddressStatement.executeUpdate();
 			
 			ResultSet rs3 = insertAddressStatement.getGeneratedKeys();
@@ -104,7 +117,7 @@ public class UserDAO {
 			PreparedStatement insertUserStatement = con.prepareStatement(Helper.INSERT_USER_QUERY,
 					Statement.RETURN_GENERATED_KEYS);
 			insertUserStatement.setString(1, user.getEmail());
-			insertUserStatement.setString(2, user.getPassword());
+			insertUserStatement.setString(2, hashedPassword);
 			insertUserStatement.setString(3, user.getTelephone());
 			insertUserStatement.setDate(4, Date.valueOf(user.getDateOfBirth()));
 			insertUserStatement.setLong(5, primaryKey2);

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import bg.rezzo.dao.ClubDAO;
 import bg.rezzo.dto.ClubDTO;
+import bg.rezzo.dto.RestaurantDTO;
 import bg.rezzo.exception.NoSuchClubException;
 import bg.rezzo.model.Club;
 
@@ -37,5 +38,7 @@ public class ClubController {
 			
 		}
 	}
+	
+
 
 }
