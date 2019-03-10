@@ -29,7 +29,7 @@ public class Helper {
 	public static final String INSERT_ADDRESS_QUERY = "insert into address "
 			+ "values(null, ?, 'Bulgaria', ?)";
 	public static final String INSERT_USER_QUERY = "insert into users "
-			+ "values(null, ?, ?, ?, ?, ?, 1)";
+			+ "values(null, ?, ?, ?, ?, ?, 0)";
 	public static final String GET_ALL_EVENTS_QUERY = "select e.id, e.date, e.event_url, e.event_description, e.event_title, p.name\r\n" + 
 			"from events e\r\n" + 
 			"join places p on (e.place_id = p.id);";
@@ -109,4 +109,13 @@ public class Helper {
 				+ "join clubs c on (m.id = c.music_id) "
 				+ "join places p on (c.id = p.restaurant_id) "
 				+ "join offers o on (p.id = o.place_id)";
+	public static final String GET_ALL_CITITES_QUERY = "select * from cities";
+	public static final String GET_ALL_MUSIC_QUERY = "select * from music";
+	public static final String GET_ALL_KITCHENS_QUERY = "select * from kitchens";
+	public static final String UPDATE_USERS_QUERY = "update users set "
+				+ "email=?, "
+				+ "telephone=?, "
+				+ "date_of_birth=? "
+				+ "where id = ?;";
+	public static final String UPDATE_ADDRESS_QUERY = "update address set country=? where id=?;";
 }

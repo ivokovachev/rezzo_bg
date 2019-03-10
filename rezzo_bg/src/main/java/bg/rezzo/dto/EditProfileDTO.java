@@ -8,7 +8,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class EditProfileDTO {
-	private String email;
 	private String telephone;
 	private String dateOfBirth;
 	private String street;

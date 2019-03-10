@@ -101,10 +101,6 @@ public class UserDAO {
 		}
 		
 		Address address = u.getAddress();
-		
-		if(!(u.getEmail().equals(user.getEmail()) || user.getEmail().equals(""))) {
-			u.setEmail(user.getEmail());
-		}
 		if(!(u.getTelephone().equals(user.getTelephone()) || user.getTelephone().equals(""))) {
 			u.setTelephone(user.getTelephone());
 		}
@@ -155,17 +151,13 @@ public class UserDAO {
 		if(!(u.getAddress().getCountry().equals(user.getCountry()) || user.getCountry().equals(""))) {
 			address.setCountry(user.getCountry());
 			u.setAddress(address);
-			PreparedStatement streetStatement = con.prepareStatement("update address set country=? where id=?;");
+			PreparedStatement streetStatement = con.prepareStatement(Helper.UPDATE_ADDRESS_QUERY);
 			streetStatement.setString(1, user.getCountry());
 			streetStatement.setLong(2, u.getAddress().getId());
 			streetStatement.executeUpdate();
 		}
 		
-		PreparedStatement st2 = con.prepareStatement("update users set "
-				+ "email=?, "
-				+ "telephone=?, "
-				+ "date_of_birth=? "
-				+ "where id = ?;");
+		PreparedStatement st2 = con.prepareStatement(Helper.UPDATE_USERS_QUERY);
 		st2.setString(1, u.getEmail());
 		st2.setString(2, u.getTelephone());
 		st2.setDate(3, java.sql.Date.valueOf(u.getDateOfBirth()));
@@ -299,7 +291,7 @@ public class UserDAO {
 		int end = Integer.parseInt(reservation.getEnd());
 		int diff = end - start;
 		if(start > end) {
-			diff = end+24-end;
+			diff = end+24-start;
 		}
 		if(slots.size() < diff) {
 			for(int i = start; i <= end-1; i++) {
@@ -381,7 +373,7 @@ public class UserDAO {
 		Connection con = this.jdbcTemplate.getDataSource().getConnection();
 		Statement statement = con.createStatement();
 		
-		ResultSet rs = statement.executeQuery("select * from cities");
+		ResultSet rs = statement.executeQuery(Helper.GET_ALL_CITITES_QUERY);
 		Map<String, Long> cities = new HashMap<String, Long>();
 		while(rs.next()) {
 			cities.put(rs.getString(2), rs.getLong(1));
@@ -424,7 +416,7 @@ public class UserDAO {
 			 addressId = set.getLong(1);
 		}
 		Map<String, Long> kitchens = new HashMap<String, Long>();
-		ResultSet resSet = statement.executeQuery("select * from kitchens");
+		ResultSet resSet = statement.executeQuery(Helper.GET_ALL_KITCHENS_QUERY);
 		while(resSet.next()) {
 			kitchens.put(resSet.getString(2), resSet.getLong(1));
 		}
@@ -494,7 +486,7 @@ public class UserDAO {
 		
 		Connection con = this.jdbcTemplate.getDataSource().getConnection();
 		Statement statement = con.createStatement();
-		ResultSet rs = statement.executeQuery("select * from cities");
+		ResultSet rs = statement.executeQuery(Helper.GET_ALL_CITITES_QUERY);
 		Map<String, Long> cities = new HashMap<String, Long>();
 		while(rs.next()) {
 			cities.put(rs.getString(2), rs.getLong(1));
@@ -534,7 +526,7 @@ public class UserDAO {
 		}
 		
 		Map<String, Long> genres = new HashMap<String, Long>();
-		ResultSet resSet = statement.executeQuery("select * from music");
+		ResultSet resSet = statement.executeQuery(Helper.GET_ALL_MUSIC_QUERY);
 		while(resSet.next()) {
 			genres.put(resSet.getString(2), resSet.getLong(1));
 		}
