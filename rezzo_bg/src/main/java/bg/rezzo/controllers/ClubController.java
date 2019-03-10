@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import bg.rezzo.dao.ClubDAO;
 import bg.rezzo.dto.ClubDTO;
+import bg.rezzo.dto.RestaurantDTO;
 import bg.rezzo.exception.NoSuchClubException;
 import bg.rezzo.model.Club;
 
@@ -37,5 +38,16 @@ public class ClubController {
 			
 		}
 	}
+	
+	@GetMapping("/clubs/events")
+	public List<ClubDTO> getAllRestaurantsWithEvents() throws SQLException {
+		return this.clubDAO.getAllClubsWithEvents();
+	}
+	
+	@GetMapping("/clubs/offers")
+	public List<ClubDTO> getAllRestaurantsWithOffers() throws SQLException {
+		return this.clubDAO.getAllClubsWithOffers();
+	}
+	
 
 }

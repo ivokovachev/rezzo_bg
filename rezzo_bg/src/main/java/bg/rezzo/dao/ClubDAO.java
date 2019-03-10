@@ -28,22 +28,6 @@ public class ClubDAO {
 		Connection con = jdbcTemplate.getDataSource().getConnection();
 		Statement statement = con.createStatement();
 		ResultSet resultSet = statement.executeQuery(Helper.GET_DETAILS_FOR_ALL_CLUBS);
-		
-//		while(resultSet.next()) {
-//			if(clubId == null || resultSet.getLong(4) == clubId) {
-//				clubs.add(new ClubDTO(resultSet.getLong(1), resultSet.getString(2), resultSet.getString(3), resultSet.getLong(4), resultSet.getDouble(5)));
-//			}
-//		}
-//			return clubs
-//					.stream()
-//					.sorted((c1, c2) -> {
-//						switch(sortBy) {
-//							case "clubName": return c1.getClubName().compareTo(c2.getClubName());
-//							case "rating": return (int) ((c2.getRating() - c1.getRating()));
-//							default: return 1;
-//						}
-//					})
-//					.collect(Collectors.toList());
 		while(resultSet.next()) {
 			if(clubId == null || resultSet.getLong(4) == clubId) {
 					clubs.add(new ClubDTO(resultSet.getLong(1), resultSet.getString(2), resultSet.getString(3), resultSet.getLong(4), resultSet.getDouble(5)));
@@ -81,6 +65,34 @@ public class ClubDAO {
 	@Autowired
 	private void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
+	}
+
+	public List<ClubDTO> getAllClubsWithEvents() throws SQLException {
+		Connection con = this.jdbcTemplate.getDataSource().getConnection();
+		Statement st = con.createStatement();
+		ResultSet rs = st.executeQuery(Helper.GET_ALL_CLUBS_WITH_EVENTS_QUERY);
+	
+		List<ClubDTO> clubs = new LinkedList<ClubDTO>();
+		while(rs.next()) {
+			clubs.add(new ClubDTO(rs.getLong(1), rs.getString(2), rs.getString(3),
+					rs.getLong(4), rs.getDouble(5)));
+		}
+		
+		return clubs;
+	}
+
+	public List<ClubDTO> getAllClubsWithOffers() throws SQLException {
+		Connection con = this.jdbcTemplate.getDataSource().getConnection();
+		Statement st = con.createStatement();
+		ResultSet rs = st.executeQuery(Helper.GET_ALL_CLUBS_WITH_OFFERS_QUERY);
+	
+		List<ClubDTO> clubs = new LinkedList<ClubDTO>();
+		while(rs.next()) {
+			clubs.add(new ClubDTO(rs.getLong(1), rs.getString(2), rs.getString(3),
+					rs.getLong(4), rs.getDouble(5)));
+		}
+		
+		return clubs;
 	}
 
 }

@@ -3,33 +3,34 @@ package bg.rezzo.helper;
 
 
 public class Helper {
-	public static String GET_ALL_USERS_DATA_QUERY =
+	public static final String GET_ALL_USERS_DATA_QUERY =
 			"select u.id, u.email, u.password, u.telephone, a.id, a.street, a.country, c.name\r\n" + 
 			"from users u\r\n" + 
 			"join address a on (u.address_id = a.id)\r\n" + 
 			"join cities c on (a.city_id = c.id);\r\n" + 
 			"";
-	public static String QUERY = "select u.id, u.email, u.password, u.telephone, a.id, a.street, a.country, c.name, u.is_admin\r\n" + 
+	public static final String QUERY = "select u.id, u.email, u.password, u.telephone, a.id, a.street, a.country, c.name, u.is_admin\r\n" + 
 			"from users u\r\n" + 
 			"join address a on (u.address_id = a.id)\r\n" + 
 			"join cities c on (a.city_id = c.id)\r\n" + 
 			"where u.email = ?;";
-	public static String GET_USER_PROFILE_QUERY = "select u.id, u.email, u.password, u.telephone, a.id, a.street, a.country, c.name\r\n" + 
+
+	public static final String GET_USER_PROFILE_QUERY = "select u.id, u.email, u.password, u.telephone, a.id, a.street, a.country, c.name\r\n" + 
 			"from users u\r\n" + 
 			"join address a on (u.address_id = a.id)\r\n" + 
 			"join cities c on (a.city_id = c.id)\r\n" + 
 			"where u.id = ?;";
-	public static String GET_ALL_USERS_EMAILS_QUERY = "select u.email\r\n" + 
+	public static final String GET_ALL_USERS_EMAILS_QUERY = "select u.email\r\n" + 
 			"from users u\r\n" + 
 			"join address a on (u.address_id = a.id)\r\n" + 
 			"join cities c on (a.city_id = c.id);";
-	public static String INSERT_CITY_QUERY = "insert into cities "
+	public static final String INSERT_CITY_QUERY = "insert into cities "
 			+ "values(null, ?)";
-	public static String INSERT_ADDRESS_QUERY = "insert into address "
-			+ "values(null, '', 'Bulgaria', ?)";
-	public static String INSERT_USER_QUERY = "insert into users "
-			+ "values(null, ?, ?, ?, ?, ?, 0)";
-	public static String GET_ALL_EVENTS_QUERY = "select e.id, e.date, e.event_url, e.event_description, e.event_title, p.name\r\n" + 
+	public static final String INSERT_ADDRESS_QUERY = "insert into address "
+			+ "values(null, ?, 'Bulgaria', ?)";
+	public static final String INSERT_USER_QUERY = "insert into users "
+			+ "values(null, ?, ?, ?, ?, ?, 1)";
+	public static final String GET_ALL_EVENTS_QUERY = "select e.id, e.date, e.event_url, e.event_description, e.event_title, p.name\r\n" + 
 			"from events e\r\n" + 
 			"join places p on (e.place_id = p.id);";
 	public static final String GET_ALL_OFFERS_QUERY = "select o.id, o.offer_description, o.offer_title, o.offer_url, p.name\r\n" + 
@@ -79,4 +80,27 @@ public class Helper {
 	public static final String INSERT_KITCHEN = "insert into kitchens values(null, ?)";
 	public static final String INSERT_MIDDLE = "insert into restaurants values (null, ?)";
 	public static final String GET_RESTAURANT = "select r.id from restaurants r where r.kitchen_id = ?";
+
+	public static final String UPDATE_SLOT_QUERY = "update slots set "
+			+ "free_tables = ? where id = ?;";
+	public static final String GET_ALL_RESTAURANTS_WITH_EVENTS_QUERY = "select p.id, p.name, k.name, k.id, p.rating "
+				+ "from kitchens k "
+				+ "join restaurants r on (k.id = r.kitchen_id) "
+				+ "join places p on (r.id = p.restaurant_id) "
+				+ "join events e on (p.id = e.place_id)";
+	public static final String GET_ALL_RESTAURANTS_WITH_OFFERS_QUERY = "select p.id, p.name, k.name, k.id, p.rating "
+				+ "from kitchens k "
+				+ "join restaurants r on (k.id = r.kitchen_id) "
+				+ "join places p on (r.id = p.restaurant_id) "
+				+ "join offers o on (p.id = o.place_id)";
+	public static final String GET_ALL_CLUBS_WITH_EVENTS_QUERY = "select p.id, p.name, m.genre, m.id, p.rating "
+				+ "from music m "
+				+ "join clubs c on (m.id = c.music_id) "
+				+ "join places p on (c.id = p.restaurant_id) "
+				+ "join events e on (p.id = e.place_id)";
+	public static final String GET_ALL_CLUBS_WITH_OFFERS_QUERY = "select p.id, p.name, m.genre, m.id, p.rating "
+				+ "from music m "
+				+ "join clubs c on (m.id = c.music_id) "
+				+ "join places p on (c.id = p.restaurant_id) "
+				+ "join offers o on (p.id = o.place_id)";
 }

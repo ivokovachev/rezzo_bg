@@ -33,8 +33,13 @@ public class UserController {
 	
 	
 	@PostMapping("/login")
-	public void login(@RequestBody LoginDTO user, HttpServletRequest request) throws SQLException {
+	public void login(@RequestBody LoginDTO user, HttpServletRequest request) throws SQLException, LoginException {
 		User u = this.userDao.login(user);
+		
+		if(u == null) {
+			throw new LoginException("Invalid login");
+		}
+		
 		HttpSession session = request.getSession();
 		session.setAttribute("userId", u.getId());
 		session.setAttribute("isAdmin", u.getIsAdmin());

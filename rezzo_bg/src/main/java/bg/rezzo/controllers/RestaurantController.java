@@ -21,11 +21,7 @@ public class RestaurantController {
 	
 	@Autowired
 	private RestaurantDAO restaurantDAO;
-	
-//	@GetMapping("/restaurants")
-//	public List<RestaurantDTO> getAllRestaurants() throws SQLException {
-//		return this.restaurantDAO.getAllRestaurants();
-//	}
+
 	
 	@GetMapping("/restaurants")
 	public List<RestaurantDTO> getAllRestaurants(@RequestParam (name = "sortBy", required = false) String sortBy,
@@ -44,4 +40,15 @@ public class RestaurantController {
 				return null;
 			}
 		}
+	
+	@GetMapping("/restaurants/events")
+	public List<RestaurantDTO> getAllRestaurantsWithEvents() throws SQLException {
+		return this.restaurantDAO.getAllRestaurantsWithEvents();
+	}
+	
+	@GetMapping("/restaurants/offers")
+	public List<RestaurantDTO> getAllRestaurantsWithOffers() throws SQLException {
+		return this.restaurantDAO.getAllRestaurantsWithOffers();
+	}
+	
 }

@@ -70,4 +70,32 @@ public class RestaurantDAO {
 	private void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
 	}
+
+	public List<RestaurantDTO> getAllRestaurantsWithEvents() throws SQLException {
+		Connection con = this.jdbcTemplate.getDataSource().getConnection();
+		Statement st = con.createStatement();
+		ResultSet rs = st.executeQuery(Helper.GET_ALL_RESTAURANTS_WITH_EVENTS_QUERY);
+		
+		List<RestaurantDTO> restaurants = new LinkedList<RestaurantDTO>();
+		while(rs.next()) {
+			restaurants.add(new RestaurantDTO(rs.getLong(1), rs.getString(2),
+					rs.getString(3), rs.getLong(4), rs.getDouble(5)));
+		}
+		
+		return restaurants;
+	}
+
+	public List<RestaurantDTO> getAllRestaurantsWithOffers() throws SQLException {
+		Connection con = this.jdbcTemplate.getDataSource().getConnection();
+		Statement st = con.createStatement();
+		ResultSet rs = st.executeQuery(Helper.GET_ALL_RESTAURANTS_WITH_OFFERS_QUERY);
+		
+		List<RestaurantDTO> restaurants = new LinkedList<RestaurantDTO>();
+		while(rs.next()) {
+			restaurants.add(new RestaurantDTO(rs.getLong(1), rs.getString(2), rs.getString(3),
+					rs.getLong(4), rs.getDouble(5)));
+		}
+		
+		return restaurants;
+	}
 }
