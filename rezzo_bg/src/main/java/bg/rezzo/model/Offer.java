@@ -13,4 +13,5 @@ public class Offer {
 	private String place;
 	private String title;
 	private String pictureUrl;
+	private int price;
 }

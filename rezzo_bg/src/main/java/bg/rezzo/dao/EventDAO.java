@@ -6,8 +6,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 
 import bg.rezzo.helper.Helper;
 import bg.rezzo.model.Event;
+
+
 
 @Component
 public class EventDAO {
@@ -32,6 +34,26 @@ public class EventDAO {
 		while(rs.next()) {
 			events.add(new Event(rs.getLong(1), rs.getDate(2).toLocalDate(), rs.getString(6),
 					rs.getString(3), rs.getString(4), rs.getString(5)));
+		}
+		
+		return events;
+	}
+	
+	public List<Event> getAllEventsSortedByDate(String sortBy) throws SQLException {
+		List<Event> events = new LinkedList<Event>();
+		Connection con = this.jdbcTemplate.getDataSource().getConnection();
+		Statement statement = con.createStatement();
+		ResultSet rs = statement.executeQuery(Helper.GET_ALL_EVENTS_QUERY);
+		while(rs.next()) {
+			events.add(new Event(rs.getLong(1), rs.getDate(2).toLocalDate(), rs.getString(6),
+					rs.getString(3), rs.getString(4), rs.getString(5)));
+		}
+		
+		if(sortBy != null && sortBy.equals("date")) {
+			events = events
+			.stream()
+			.sorted((event1, event2) -> (event1.getDate().compareTo(event2.getDate())))
+			.collect(Collectors.toList());	
 		}
 		
 		return events;

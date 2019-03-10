@@ -265,7 +265,7 @@ public class UserDAO {
 			diff = e+24-s;
 		}
 		for(int i = 0; i < diff; i++) {
-			Integer startTime = s + i - 1;
+			Integer startTime = s + i - 1 + 3;
 			Integer endTime = startTime + 1;
 			if(startTime >= 24) {
 				startTime -= 24;
@@ -342,10 +342,13 @@ public class UserDAO {
 				break;
 			}
 		}
+		
+		Integer start = Integer.parseInt(restaurantInputDTO.getStartWorkingDay()) + 2;
+		Integer end = Integer.parseInt(restaurantInputDTO.getEndWorkingDay()) + 2;
 		PreparedStatement restaurantStatement = con.prepareStatement(Helper.INSERT_RESTAURANT, Statement.RETURN_GENERATED_KEYS);
 		restaurantStatement.setString(1, restaurantInputDTO.getRestaurantName());
-		restaurantStatement.setTime(2, java.sql.Time.valueOf(restaurantInputDTO.getStartWorkingDay()));
-		restaurantStatement.setTime(3, java.sql.Time.valueOf(restaurantInputDTO.getEndWorkingDay()));
+		restaurantStatement.setTime(2, java.sql.Time.valueOf(start.toString()+":00:00"));
+		restaurantStatement.setTime(3, java.sql.Time.valueOf(end.toString()+":00:00"));
 		restaurantStatement.setDouble(4, restaurantInputDTO.getRating());
 		restaurantStatement.setString(5, restaurantInputDTO.getDescription());
 		restaurantStatement.setLong(6, addressId);
