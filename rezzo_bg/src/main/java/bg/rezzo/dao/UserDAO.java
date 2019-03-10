@@ -13,11 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.hibernate.result.UpdateCountOutput;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import bg.rezzo.dto.EditProfileDTO;
 import bg.rezzo.dto.LoginDTO;
 import bg.rezzo.dto.RegistrationDTO;
 import bg.rezzo.dto.ReservationDTO;
@@ -73,9 +75,101 @@ public class UserDAO {
 		User u = null;
 		while(rs.next()) {
 			u = new User(rs.getLong(1), rs.getString(2), rs.getString(3),
-					rs.getString(4), LocalDate.now(), new Address(rs.getLong(5),
-							rs.getString(6), rs.getString(8), rs.getString(7)), rs.getInt(8));
+					rs.getString(4), rs.getDate(5).toLocalDate(), new Address(rs.getLong(6),
+							rs.getString(7), rs.getString(8), rs.getString(9)), rs.getInt(10));
 		}
+		
+		return u;
+	}
+	
+	public User editProfile(long id, EditProfileDTO user) throws SQLException {
+		Connection con = this.jdbcTemplate.getDataSource().getConnection();
+		PreparedStatement st = con.prepareStatement("select u.*, a.street, c.name, a.country "
+				+ "from users u "
+				+ "join address a on(u.address_id = a.id) "
+				+ "join cities c on (a.city_id = c.id) "
+				+ " where u.id = ?;");
+		st.setLong(1, id);
+		ResultSet rs = st.executeQuery();
+		User u = null;
+		while(rs.next()) {
+			u = new User(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getString(4),
+					rs.getDate(5).toLocalDate(),
+					new Address(rs.getLong(6), rs.getString(8), rs.getString(9), rs.getString(10)),
+					rs.getInt(7));
+		}
+		
+		Address address = u.getAddress();
+		
+		if(!(u.getEmail().equals(user.getEmail()) || user.getEmail().equals(""))) {
+			u.setEmail(user.getEmail());
+		}
+		if(!(u.getTelephone().equals(user.getTelephone()) || user.getTelephone().equals(""))) {
+			u.setTelephone(user.getTelephone());
+		}
+		if(!(u.getDateOfBirth().equals(user.getDateOfBirth()))) {
+			u.setDateOfBirth(LocalDate.parse(user.getDateOfBirth()));
+		}
+		if(!(u.getAddress().getStreet().equals(user.getStreet()) || user.getStreet().equals(""))) {
+			address.setStreet(user.getStreet());
+			u.setAddress(address);
+			PreparedStatement streetStatement = con.prepareStatement("update address set street=? where id=?;");
+			streetStatement.setString(1, user.getStreet());
+			streetStatement.setLong(2, u.getAddress().getId());
+			streetStatement.executeUpdate();
+		}
+		if(!(u.getAddress().getCity().equals(user.getCity()) || user.getCity().equals(""))) {
+			address.setCity(user.getCity());
+			u.setAddress(address);
+			PreparedStatement ps = con.prepareStatement("update address set city_id=?");
+			PreparedStatement getCityIdStatement = con.prepareStatement("select id "
+					+ "from cities "
+					+ "where name=?");
+			getCityIdStatement.setString(1, user.getCity());
+			ResultSet rs2 = getCityIdStatement.executeQuery();
+			long cityId = -1;
+			while(rs2.next()) {
+				cityId = rs2.getLong(1);
+			}
+			if(cityId == -1) {
+				PreparedStatement insertCityStatement = con.prepareStatement("insert into cities "
+						+ "values(null, ?)", Statement.RETURN_GENERATED_KEYS);
+				insertCityStatement.setString(1, user.getCity());
+				insertCityStatement.executeUpdate();
+				ResultSet cityKeys = insertCityStatement.getGeneratedKeys();
+				long insertedCityId = -1;
+				while(cityKeys.next()) {
+					insertedCityId = cityKeys.getLong(1);
+				}
+				PreparedStatement updateAddressStatement = con.prepareStatement("update address "
+						+ "set city_id=? where id=?");
+				updateAddressStatement.setLong(1, insertedCityId);
+				updateAddressStatement.setLong(2, u.getAddress().getId());
+				updateAddressStatement.executeUpdate();
+			} else {
+				ps.setLong(1, cityId);
+				ps.executeUpdate();
+			}
+		}
+		if(!(u.getAddress().getCountry().equals(user.getCountry()) || user.getCountry().equals(""))) {
+			address.setCountry(user.getCountry());
+			u.setAddress(address);
+			PreparedStatement streetStatement = con.prepareStatement("update address set country=? where id=?;");
+			streetStatement.setString(1, user.getCountry());
+			streetStatement.setLong(2, u.getAddress().getId());
+			streetStatement.executeUpdate();
+		}
+		
+		PreparedStatement st2 = con.prepareStatement("update users set "
+				+ "email=?, "
+				+ "telephone=?, "
+				+ "date_of_birth=? "
+				+ "where id = ?;");
+		st2.setString(1, u.getEmail());
+		st2.setString(2, u.getTelephone());
+		st2.setDate(3, java.sql.Date.valueOf(u.getDateOfBirth()));
+		st2.setLong(4, id);
+		st2.executeUpdate();
 		
 		return u;
 	}

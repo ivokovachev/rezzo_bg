@@ -15,7 +15,7 @@ public class Helper {
 			"join cities c on (a.city_id = c.id)\r\n" + 
 			"where u.email = ?;";
 
-	public static final String GET_USER_PROFILE_QUERY = "select u.id, u.email, u.password, u.telephone, a.id, a.street, a.country, c.name\r\n" + 
+	public static final String GET_USER_PROFILE_QUERY = "select u.id, u.email, u.password, u.telephone, u.date_of_birth, a.id, a.street, a.country, c.name, u.is_admin\r\n" + 
 			"from users u\r\n" + 
 			"join address a on (u.address_id = a.id)\r\n" + 
 			"join cities c on (a.city_id = c.id)\r\n" + 

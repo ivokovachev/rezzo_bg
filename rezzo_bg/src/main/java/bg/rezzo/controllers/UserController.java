@@ -11,10 +11,12 @@ import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import bg.rezzo.dao.UserDAO;
+import bg.rezzo.dto.EditProfileDTO;
 import bg.rezzo.dto.LoginDTO;
 import bg.rezzo.dto.RegistrationDTO;
 import bg.rezzo.dto.ReservationDTO;
@@ -56,6 +58,19 @@ public class UserController {
 		
 		long id = (Long) session.getAttribute("userId");
 		return this.userDao.getUser(id);
+	}
+	
+	@PutMapping("/profile")
+	public User editUserProfile(@RequestBody EditProfileDTO user, HttpServletRequest request, HttpServletResponse response) throws SQLException {
+		HttpSession session = request.getSession();
+		
+		if(session.getAttribute("userId") == null) {
+			response.setStatus(401);
+			return null;
+		}
+		
+		long id = (Long) session.getAttribute("userId");
+		return this.userDao.editProfile(id, user);
 	}
 	
 	@PostMapping("/signout")
