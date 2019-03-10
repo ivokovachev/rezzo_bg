@@ -22,6 +22,7 @@ import bg.rezzo.dto.RegistrationDTO;
 import bg.rezzo.dto.ReservationDTO;
 import bg.rezzo.dto.RestaurantInputDTO;
 import bg.rezzo.exception.ForbiddenException;
+import bg.rezzo.exception.InvalidPlaceException;
 import bg.rezzo.exception.LoginException;
 import bg.rezzo.exception.ReservationException;
 import bg.rezzo.model.Booking;
@@ -97,12 +98,12 @@ public class UserController {
 //		
 //	}
 	
-//	@PostMapping("/offers")
-//	public Long addOffer(@RequestBody OfferInputDTO offerInputDTO, HttpServletRequest request, HttpServletResponse response) {
-//		isAdminlogged(request, response);
-//		return this.userDao.addOffer(offerInputDTO);
-//		
-//	}
+	@PostMapping("/offers")
+	public Long addOffer(@RequestBody OfferInputDTO offerInputDTO, HttpServletRequest request, HttpServletResponse response) throws LoginException, ForbiddenException, SQLException, InvalidPlaceException {
+		isAdminlogged(request, response);
+		return this.userDao.addOffer(offerInputDTO);
+		
+	}
 	
 	
 	@PostMapping("/reservation")
