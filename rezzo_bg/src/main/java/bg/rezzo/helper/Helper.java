@@ -9,11 +9,12 @@ public class Helper {
 			"join address a on (u.address_id = a.id)\r\n" + 
 			"join cities c on (a.city_id = c.id);\r\n" + 
 			"";
-	public static final String QUERY = "select u.id, u.email, u.password, u.telephone, a.id, a.street, a.country, c.name\r\n" + 
+	public static final String QUERY = "select u.id, u.email, u.password, u.telephone, a.id, a.street, a.country, c.name, u.is_admin\r\n" + 
 			"from users u\r\n" + 
 			"join address a on (u.address_id = a.id)\r\n" + 
 			"join cities c on (a.city_id = c.id)\r\n" + 
 			"where u.email = ?;";
+
 	public static final String GET_USER_PROFILE_QUERY = "select u.id, u.email, u.password, u.telephone, a.id, a.street, a.country, c.name\r\n" + 
 			"from users u\r\n" + 
 			"join address a on (u.address_id = a.id)\r\n" + 
@@ -28,7 +29,7 @@ public class Helper {
 	public static final String INSERT_ADDRESS_QUERY = "insert into address "
 			+ "values(null, ?, 'Bulgaria', ?)";
 	public static final String INSERT_USER_QUERY = "insert into users "
-			+ "values(null, ?, ?, ?, ?, ?, 0)";
+			+ "values(null, ?, ?, ?, ?, ?, 1)";
 	public static final String GET_ALL_EVENTS_QUERY = "select e.id, e.date, e.event_url, e.event_description, e.event_title, p.name\r\n" + 
 			"from events e\r\n" + 
 			"join places p on (e.place_id = p.id);";
@@ -73,6 +74,13 @@ public class Helper {
 			"from places\r\n" + 
 			"where name = ?), ?);";
 	public static final String INSERT_BOOKING_QUERY = "insert into bookings values(null, ?, ?);";
+	public static final String INSERT_CITY = "insert into cities values(null, ?)";
+	public static final String INSERT_ADDRESS = "insert into address values(null, ?, ?, ?);";
+	public static final String INSERT_RESTAURANT = "insert into places values (null, ?, ?, ?, ?, ?, 10, ?, ?, null)";
+	public static final String INSERT_KITCHEN = "insert into kitchens values(null, ?)";
+	public static final String INSERT_MIDDLE = "insert into restaurants values (null, ?)";
+	public static final String GET_RESTAURANT = "select r.id from restaurants r where r.kitchen_id = ?";
+
 	public static final String UPDATE_SLOT_QUERY = "update slots set "
 			+ "free_tables = ? where id = ?;";
 	public static final String GET_ALL_RESTAURANTS_WITH_EVENTS_QUERY = "select p.id, p.name, k.name, k.id, p.rating "

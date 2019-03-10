@@ -18,6 +18,8 @@ import bg.rezzo.dao.UserDAO;
 import bg.rezzo.dto.LoginDTO;
 import bg.rezzo.dto.RegistrationDTO;
 import bg.rezzo.dto.ReservationDTO;
+import bg.rezzo.dto.RestaurantInputDTO;
+import bg.rezzo.exception.ForbiddenException;
 import bg.rezzo.exception.LoginException;
 import bg.rezzo.exception.ReservationException;
 import bg.rezzo.model.Booking;
@@ -40,6 +42,7 @@ public class UserController {
 		
 		HttpSession session = request.getSession();
 		session.setAttribute("userId", u.getId());
+		session.setAttribute("isAdmin", u.getIsAdmin());
 	}
 	
 	@GetMapping("/profile")
@@ -79,6 +82,19 @@ public class UserController {
 		return this.userDao.getUserBookings(id);
 	}
 	
+	@PostMapping("/clubs")
+	public Long addClub(@RequestBody RestaurantInputDTO restaurantInputDTO, HttpServletRequest request, HttpServletResponse response) throws LoginException, ForbiddenException, SQLException {
+		HttpSession session = request.getSession();
+		if(session.getAttribute("userId") == null) {
+			throw new LoginException("Please login first!");
+		}
+		if(session.getAttribute("isAdmin").equals(0)) {
+			throw new ForbiddenException("You are not allowed to add restaurants!");
+		}
+		return this.userDao.addRestaurant(restaurantInputDTO);
+		
+	}
+	
 	
 	@PostMapping("/reservation")
 	public void reserve(@RequestBody ReservationDTO reservation, HttpServletRequest request, HttpServletResponse response) throws SQLException, ReservationException, LoginException, IOException {
@@ -95,9 +111,23 @@ public class UserController {
 		boolean isReservationSuccessful = this.userDao.makeReservation(reservation, id);
 		if(!isReservationSuccessful) {
 			throw new ReservationException("No enough tables!");
-		}
-				
+		}		
 	}
+	
+	@PostMapping("/restaurants")
+	public Long addRestaurant(@RequestBody RestaurantInputDTO restaurantInputDTO, HttpServletRequest request, HttpServletResponse response) throws LoginException, ForbiddenException, SQLException {
+		HttpSession session = request.getSession();
+		if(session.getAttribute("userId") == null) {
+			throw new LoginException("Please login first!");
+		}
+		if(session.getAttribute("isAdmin").equals(0)) {
+			throw new ForbiddenException("You are not allowed to add restaurants!");
+		}
+		return this.userDao.addRestaurant(restaurantInputDTO);
+		
+	}
+	
+	
 	
 	
 }

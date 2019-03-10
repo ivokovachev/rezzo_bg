@@ -7,18 +7,21 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-
 import bg.rezzo.dto.LoginDTO;
 import bg.rezzo.dto.RegistrationDTO;
 import bg.rezzo.dto.ReservationDTO;
+import bg.rezzo.dto.RestaurantInputDTO;
 import bg.rezzo.helper.Helper;
 import bg.rezzo.model.Address;
 import bg.rezzo.model.Booking;
@@ -47,7 +50,7 @@ public class UserDAO {
 		while(rs.next()) {
 			u = new User(rs.getLong(1), rs.getString(2), rs.getString(3),
 					rs.getString(4), LocalDate.now(), new Address(rs.getLong(5),
-							rs.getString(6), rs.getString(8), rs.getString(7)));
+							rs.getString(6), rs.getString(7), rs.getString(8)), rs.getInt(9));
 		}
 		
 		boolean areTheSame = false;
@@ -71,11 +74,12 @@ public class UserDAO {
 		while(rs.next()) {
 			u = new User(rs.getLong(1), rs.getString(2), rs.getString(3),
 					rs.getString(4), LocalDate.now(), new Address(rs.getLong(5),
-							rs.getString(6), rs.getString(8), rs.getString(7)));
+							rs.getString(6), rs.getString(8), rs.getString(7)), rs.getInt(8));
 		}
 		
 		return u;
 	}
+	
 	
 	public boolean registration(RegistrationDTO user) throws SQLException {
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -235,8 +239,6 @@ public class UserDAO {
 		
 		return true;
 	}
-	
-	
 	@Autowired
 	private void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
@@ -261,7 +263,7 @@ public class UserDAO {
 			diff = e+24-s;
 		}
 		for(int i = 0; i < diff; i++) {
-			Integer startTime = s + i - 1;
+			Integer startTime = s + i - 1 + 3;
 			Integer endTime = startTime + 1;
 			if(startTime >= 24) {
 				startTime -= 24;
@@ -276,5 +278,118 @@ public class UserDAO {
 			st.setLong(7, bookingId);
 			st.executeUpdate();
 		}
+	}
+
+	public Long addRestaurant(RestaurantInputDTO restaurantInputDTO) throws SQLException {
+		Connection con = this.jdbcTemplate.getDataSource().getConnection();
+		Statement statement = con.createStatement();
+		
+		ResultSet rs = statement.executeQuery("select * from cities");
+		Map<String, Long> cities = new HashMap<String, Long>();
+		while(rs.next()) {
+			cities.put(rs.getString(2), rs.getLong(1));
+		}
+		String whichCity = "";
+		long whichId = -1;
+		for(Entry<String, Long> cityEntry : cities.entrySet()) {
+			if(cityEntry.getKey().equals(restaurantInputDTO.getCity())) {
+				whichCity = cityEntry.getKey();
+				whichId = cityEntry.getValue();
+				break;
+			}
+		}
+		PreparedStatement addressStatement = con.prepareStatement(Helper.INSERT_ADDRESS, Statement.RETURN_GENERATED_KEYS);
+		addressStatement.setString(1, restaurantInputDTO.getStreet());
+		addressStatement.setString(2, restaurantInputDTO.getCountry());
+
+		if(!whichCity.equals("")) {
+			addressStatement.setLong(3, whichId);
+			addressStatement.executeUpdate();
+		} else {
+			
+			PreparedStatement cityStatement = con.prepareStatement(Helper.INSERT_CITY, Statement.RETURN_GENERATED_KEYS);
+			cityStatement.setString(1, restaurantInputDTO.getCity());
+			cityStatement.executeUpdate();
+			ResultSet keys = cityStatement.getGeneratedKeys();
+			long id = -1;
+			while(keys.next()) {
+				id = keys.getLong(1);
+			}
+			addressStatement.setLong(3,id);
+			addressStatement.executeUpdate();
+		}
+		
+		
+		
+		ResultSet set = addressStatement.getGeneratedKeys();
+		long addressId = -1;
+		while(set.next()) {
+			 addressId = set.getLong(1);
+		}
+		Map<String, Long> kitchens = new HashMap<String, Long>();
+		ResultSet resSet = statement.executeQuery("select * from kitchens");
+		while(resSet.next()) {
+			kitchens.put(resSet.getString(2), resSet.getLong(1));
+		}
+		String whichKitchen = "";
+		long kitchenId = -1;
+		for(Entry<String, Long> kitchensEntry : kitchens.entrySet()) {
+			if(kitchensEntry.getKey().equals(restaurantInputDTO.getKitchenName())) {
+				whichKitchen = kitchensEntry.getKey();
+				kitchenId = kitchensEntry.getValue();
+				break;
+			}
+		}
+		
+		Integer start = Integer.parseInt(restaurantInputDTO.getStartWorkingDay()) + 2;
+		Integer end = Integer.parseInt(restaurantInputDTO.getEndWorkingDay()) + 2;
+		PreparedStatement restaurantStatement = con.prepareStatement(Helper.INSERT_RESTAURANT, Statement.RETURN_GENERATED_KEYS);
+		restaurantStatement.setString(1, restaurantInputDTO.getRestaurantName());
+		restaurantStatement.setTime(2, java.sql.Time.valueOf(start.toString()+":00:00"));
+		restaurantStatement.setTime(3, java.sql.Time.valueOf(end.toString()+":00:00"));
+		restaurantStatement.setDouble(4, restaurantInputDTO.getRating());
+		restaurantStatement.setString(5, restaurantInputDTO.getDescription());
+		restaurantStatement.setLong(6, addressId);
+		
+		if(!whichKitchen.equals("")) {
+//			restaurantStatement.setLong(7, kitchenId);
+			PreparedStatement prepStatement = con.prepareStatement(Helper.GET_RESTAURANT, Statement.RETURN_GENERATED_KEYS);
+			prepStatement.setLong(1, kitchenId);
+			ResultSet rSet = prepStatement.executeQuery();
+			long rId = -1;
+			while(rSet.next()) {
+				rId = rSet.getLong(1);
+			}
+			restaurantStatement.setLong(7, rId);
+		} else {
+			PreparedStatement kitchenStatement = con.prepareStatement(Helper.INSERT_KITCHEN, Statement.RETURN_GENERATED_KEYS);
+			kitchenStatement.setString(1, restaurantInputDTO.getKitchenName());
+			kitchenStatement.executeUpdate();
+			
+			ResultSet keys = kitchenStatement.getGeneratedKeys();
+			long id = -1;
+			while(keys.next()) {
+				id = keys.getLong(1);
+			}
+			
+			PreparedStatement midStatement = con.prepareStatement(Helper.INSERT_MIDDLE, Statement.RETURN_GENERATED_KEYS);
+			midStatement.setLong(1, id);
+			midStatement.executeUpdate();
+			ResultSet ids = midStatement.getGeneratedKeys();
+			long midId = -1;
+			while(ids.next()) {
+				midId = ids.getLong(1);
+			}
+			
+			restaurantStatement.setLong(7, midId);
+		}
+		
+		restaurantStatement.executeUpdate();
+		ResultSet restaurantIdSet = restaurantStatement.getGeneratedKeys();
+		long returnedId = -1;
+		while(restaurantIdSet.next()) {
+			returnedId = restaurantIdSet.getLong(1);
+		}
+		return returnedId;
 	}
 }
