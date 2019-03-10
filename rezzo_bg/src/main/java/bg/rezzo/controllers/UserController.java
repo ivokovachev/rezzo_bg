@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import bg.rezzo.dao.UserDAO;
+import bg.rezzo.dto.ClubInputDTO;
 import bg.rezzo.dto.LoginDTO;
+import bg.rezzo.dto.OfferInputDTO;
 import bg.rezzo.dto.RegistrationDTO;
 import bg.rezzo.dto.ReservationDTO;
 import bg.rezzo.dto.RestaurantInputDTO;
@@ -82,18 +84,25 @@ public class UserController {
 		return this.userDao.getUserBookings(id);
 	}
 	
-	@PostMapping("/clubs")
-	public Long addClub(@RequestBody RestaurantInputDTO restaurantInputDTO, HttpServletRequest request, HttpServletResponse response) throws LoginException, ForbiddenException, SQLException {
-		HttpSession session = request.getSession();
-		if(session.getAttribute("userId") == null) {
-			throw new LoginException("Please login first!");
-		}
-		if(session.getAttribute("isAdmin").equals(0)) {
-			throw new ForbiddenException("You are not allowed to add restaurants!");
-		}
-		return this.userDao.addRestaurant(restaurantInputDTO);
-		
-	}
+//	@PostMapping("/clubs")
+//	public Long addClub(@RequestBody RestaurantInputDTO restaurantInputDTO, HttpServletRequest request, HttpServletResponse response) throws LoginException, ForbiddenException, SQLException {
+//		HttpSession session = request.getSession();
+//		if(session.getAttribute("userId") == null) {
+//			throw new LoginException("Please login first!");
+//		}
+//		if(session.getAttribute("isAdmin").equals(0)) {
+//			throw new ForbiddenException("You are not allowed to add restaurants!");
+//		}
+//		return this.userDao.addRestaurant(restaurantInputDTO);
+//		
+//	}
+	
+//	@PostMapping("/offers")
+//	public Long addOffer(@RequestBody OfferInputDTO offerInputDTO, HttpServletRequest request, HttpServletResponse response) {
+//		isAdminlogged(request, response);
+//		return this.userDao.addOffer(offerInputDTO);
+//		
+//	}
 	
 	
 	@PostMapping("/reservation")
@@ -116,6 +125,18 @@ public class UserController {
 	
 	@PostMapping("/restaurants")
 	public Long addRestaurant(@RequestBody RestaurantInputDTO restaurantInputDTO, HttpServletRequest request, HttpServletResponse response) throws LoginException, ForbiddenException, SQLException {
+		isAdminlogged(request, response);
+		return this.userDao.addRestaurant(restaurantInputDTO);
+		
+	}
+	
+	@PostMapping("/clubs")
+	public Long addClub(@RequestBody ClubInputDTO restaurantInputDTO, HttpServletRequest request, HttpServletResponse response) throws LoginException, ForbiddenException, SQLException {
+			isAdminlogged(request, response);
+		return this.userDao.addClub(restaurantInputDTO);
+	}
+	
+	private boolean isAdminlogged(HttpServletRequest request, HttpServletResponse response) throws LoginException, ForbiddenException {
 		HttpSession session = request.getSession();
 		if(session.getAttribute("userId") == null) {
 			throw new LoginException("Please login first!");
@@ -123,11 +144,6 @@ public class UserController {
 		if(session.getAttribute("isAdmin").equals(0)) {
 			throw new ForbiddenException("You are not allowed to add restaurants!");
 		}
-		return this.userDao.addRestaurant(restaurantInputDTO);
-		
+		return true;
 	}
-	
-	
-	
-	
 }

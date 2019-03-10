@@ -18,7 +18,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import bg.rezzo.dto.ClubInputDTO;
 import bg.rezzo.dto.LoginDTO;
+import bg.rezzo.dto.OfferInputDTO;
 import bg.rezzo.dto.RegistrationDTO;
 import bg.rezzo.dto.ReservationDTO;
 import bg.rezzo.dto.RestaurantInputDTO;
@@ -279,7 +281,7 @@ public class UserDAO {
 			st.executeUpdate();
 		}
 	}
-
+	
 	public Long addRestaurant(RestaurantInputDTO restaurantInputDTO) throws SQLException {
 		Connection con = this.jdbcTemplate.getDataSource().getConnection();
 		Statement statement = con.createStatement();
@@ -349,7 +351,7 @@ public class UserDAO {
 		restaurantStatement.setLong(6, addressId);
 		
 		if(!whichKitchen.equals("")) {
-//			restaurantStatement.setLong(7, kitchenId);
+//			clubStatement.setLong(7, kitchenId);
 			PreparedStatement prepStatement = con.prepareStatement(Helper.GET_RESTAURANT, Statement.RETURN_GENERATED_KEYS);
 			prepStatement.setLong(1, kitchenId);
 			ResultSet rSet = prepStatement.executeQuery();
@@ -369,7 +371,7 @@ public class UserDAO {
 				id = keys.getLong(1);
 			}
 			
-			PreparedStatement midStatement = con.prepareStatement(Helper.INSERT_MIDDLE, Statement.RETURN_GENERATED_KEYS);
+			PreparedStatement midStatement = con.prepareStatement(Helper.INSERT_RESTAURANT_MIDDLE, Statement.RETURN_GENERATED_KEYS);
 			midStatement.setLong(1, id);
 			midStatement.executeUpdate();
 			ResultSet ids = midStatement.getGeneratedKeys();
@@ -389,4 +391,160 @@ public class UserDAO {
 		}
 		return returnedId;
 	}
+	
+//	private Long updateCityAndAddress() {
+//		Connection con = this.jdbcTemplate.getDataSource().getConnection();
+//		Statement statement = con.createStatement();
+//		ResultSet rs = statement.executeQuery("select * from cities");
+//		Map<String, Long> cities = new HashMap<String, Long>();
+//		while(rs.next()) {
+//			cities.put(rs.getString(2), rs.getLong(1));
+//		}
+//		String whichCity = "";
+//		long whichId = -1;
+//		for(Entry<String, Long> cityEntry : cities.entrySet()) {
+//			if(cityEntry.getKey().equals(restaurantInputDTO.getCity())) {
+//				whichCity = cityEntry.getKey();
+//				whichId = cityEntry.getValue();
+//				break;
+//			}
+//		}
+//		PreparedStatement addressStatement = con.prepareStatement(Helper.INSERT_ADDRESS, Statement.RETURN_GENERATED_KEYS);
+//		addressStatement.setString(1, restaurantInputDTO.getStreet());
+//		addressStatement.setString(2, restaurantInputDTO.getCountry());
+//
+//		if(!whichCity.equals("")) {
+//			addressStatement.setLong(3, whichId);
+//			addressStatement.executeUpdate();
+//		} else {
+//			PreparedStatement cityStatement = con.prepareStatement(Helper.INSERT_CITY, Statement.RETURN_GENERATED_KEYS);
+//			cityStatement.setString(1, restaurantInputDTO.getCity());
+//			cityStatement.executeUpdate();
+//			ResultSet keys = cityStatement.getGeneratedKeys();
+//			long id = -1;
+//			while(keys.next()) {
+//				id = keys.getLong(1);
+//			}
+//			addressStatement.setLong(3,id);
+//			addressStatement.executeUpdate();
+//		}
+//		ResultSet set = addressStatement.getGeneratedKeys();
+//		long addressId = -1;
+//		while(set.next()) {
+//			 addressId = set.getLong(1);
+//		}
+//		return addressId;
+//	}
+
+
+	public Long addClub(ClubInputDTO clubInputDTO) throws SQLException {
+		
+		Connection con = this.jdbcTemplate.getDataSource().getConnection();
+		Statement statement = con.createStatement();
+		ResultSet rs = statement.executeQuery("select * from cities");
+		Map<String, Long> cities = new HashMap<String, Long>();
+		while(rs.next()) {
+			cities.put(rs.getString(2), rs.getLong(1));
+		}
+		String whichCity = "";
+		long whichId = -1;
+		for(Entry<String, Long> cityEntry : cities.entrySet()) {
+			if(cityEntry.getKey().equals(clubInputDTO.getCity())) {
+				whichCity = cityEntry.getKey();
+				whichId = cityEntry.getValue();
+				break;
+			}
+		}
+		PreparedStatement addressStatement = con.prepareStatement(Helper.INSERT_ADDRESS, Statement.RETURN_GENERATED_KEYS);
+		addressStatement.setString(1, clubInputDTO.getStreet());
+		addressStatement.setString(2, clubInputDTO.getCountry());
+
+		if(!whichCity.equals("")) {
+			addressStatement.setLong(3, whichId);
+			addressStatement.executeUpdate();
+		} else {
+			PreparedStatement cityStatement = con.prepareStatement(Helper.INSERT_CITY, Statement.RETURN_GENERATED_KEYS);
+			cityStatement.setString(1, clubInputDTO.getCity());
+			cityStatement.executeUpdate();
+			ResultSet keys = cityStatement.getGeneratedKeys();
+			long id = -1;
+			while(keys.next()) {
+				id = keys.getLong(1);
+			}
+			addressStatement.setLong(3,id);
+			addressStatement.executeUpdate();
+		}
+		ResultSet set = addressStatement.getGeneratedKeys();
+		long addressId = -1;
+		while(set.next()) {
+			 addressId = set.getLong(1);
+		}
+		
+		Map<String, Long> genres = new HashMap<String, Long>();
+		ResultSet resSet = statement.executeQuery("select * from music");
+		while(resSet.next()) {
+			genres.put(resSet.getString(2), resSet.getLong(1));
+		}
+		String whichMusic = "";
+		long musicId = -1;
+		for(Entry<String, Long> musicEntry : genres.entrySet()) {
+			if(musicEntry.getKey().equals(clubInputDTO.getGenreName())) {
+				whichMusic = musicEntry.getKey();
+				musicId = musicEntry.getValue();
+				break;
+			}
+		}
+		PreparedStatement clubStatement = con.prepareStatement(Helper.INSERT_CLUB, Statement.RETURN_GENERATED_KEYS);
+		clubStatement.setString(1, clubInputDTO.getClubName());
+		clubStatement.setTime(2, java.sql.Time.valueOf(clubInputDTO.getStartWorkingDay()));
+		clubStatement.setTime(3, java.sql.Time.valueOf(clubInputDTO.getEndWorkingDay()));
+		clubStatement.setDouble(4, clubInputDTO.getRating());
+		clubStatement.setString(5, clubInputDTO.getDescription());
+		clubStatement.setLong(6, addressId);
+		
+		if(!whichMusic.equals("")) {
+			PreparedStatement prepStatement = con.prepareStatement(Helper.GET_CLUB, Statement.RETURN_GENERATED_KEYS);
+			prepStatement.setLong(1, musicId);
+			ResultSet rSet = prepStatement.executeQuery();
+			long rId = -1;
+			while(rSet.next()) {
+				rId = rSet.getLong(1);
+			}
+			clubStatement.setLong(7, rId);
+		} else {
+			PreparedStatement musicStatement = con.prepareStatement(Helper.INSERT_GENRE, Statement.RETURN_GENERATED_KEYS);
+			musicStatement.setString(1, clubInputDTO.getGenreName());
+			musicStatement.executeUpdate();
+			
+			ResultSet keys = musicStatement.getGeneratedKeys();
+			long id = -1;
+			while(keys.next()) {
+				id = keys.getLong(1);
+			}
+			
+			PreparedStatement midStatement = con.prepareStatement(Helper.INSERT_CLUB_MIDDLE, Statement.RETURN_GENERATED_KEYS);
+			midStatement.setLong(1, id);
+			midStatement.executeUpdate();
+			ResultSet ids = midStatement.getGeneratedKeys();
+			long midId = -1;
+			while(ids.next()) {
+				midId = ids.getLong(1);
+			}
+			
+			clubStatement.setLong(7, midId);
+		}
+		
+		clubStatement.executeUpdate();
+		ResultSet clubIdSet = clubStatement.getGeneratedKeys();
+		long returnedId = -1;
+		while(clubIdSet.next()) {
+			returnedId = clubIdSet.getLong(1);
+		}
+		return returnedId;
+	}
+
+//	public Long addOffer(OfferInputDTO offerInputDTO) {
+//		
+//		return null;
+//	}
 }
