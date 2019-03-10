@@ -21,9 +21,11 @@ import org.springframework.stereotype.Component;
 import bg.rezzo.dto.EditProfileDTO;
 import bg.rezzo.dto.ClubInputDTO;
 import bg.rezzo.dto.LoginDTO;
+import bg.rezzo.dto.OfferInputDTO;
 import bg.rezzo.dto.RegistrationDTO;
 import bg.rezzo.dto.ReservationDTO;
 import bg.rezzo.dto.RestaurantInputDTO;
+import bg.rezzo.exception.InvalidPlaceException;
 import bg.rezzo.helper.Helper;
 import bg.rezzo.model.Address;
 import bg.rezzo.model.Booking;
@@ -599,4 +601,28 @@ public class UserDAO {
 		return returnedId;
 	}
 
+
+	public Long addOffer(OfferInputDTO offerInputDTO) throws SQLException, InvalidPlaceException {
+		Connection con = jdbcTemplate.getDataSource().getConnection();
+		PreparedStatement offerStatement = con.prepareStatement(Helper.INSERT_OFFER, Statement.RETURN_GENERATED_KEYS);
+		offerStatement.setString(1, offerInputDTO.getDescription());
+		offerStatement.setString(2, offerInputDTO.getTitle());
+		offerStatement.setString(3, offerInputDTO.getUrl());
+		offerStatement.setInt(5, offerInputDTO.getPrice());
+		
+		PreparedStatement placeStatement = con.prepareStatement(Helper.GET_RESTAURANT_ID);
+		placeStatement.setString(1, offerInputDTO.getPlaceName());
+		ResultSet rs = placeStatement.executeQuery();
+		while(rs.next()) {
+			Long id = rs.getLong(1);
+			offerStatement.setLong(4, id);
+			offerStatement.executeUpdate();
+			ResultSet keySet = offerStatement.getGeneratedKeys();
+			keySet.next();
+			long returnedId = keySet.getLong(1);
+			return returnedId;
+			
+		}
+		throw new InvalidPlaceException("There is no such place in the site!");
+	}
 }

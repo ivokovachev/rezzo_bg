@@ -19,10 +19,12 @@ import bg.rezzo.dao.UserDAO;
 import bg.rezzo.dto.EditProfileDTO;
 import bg.rezzo.dto.ClubInputDTO;
 import bg.rezzo.dto.LoginDTO;
+import bg.rezzo.dto.OfferInputDTO;
 import bg.rezzo.dto.RegistrationDTO;
 import bg.rezzo.dto.ReservationDTO;
 import bg.rezzo.dto.RestaurantInputDTO;
 import bg.rezzo.exception.ForbiddenException;
+import bg.rezzo.exception.InvalidPlaceException;
 import bg.rezzo.exception.LoginException;
 import bg.rezzo.exception.ReservationException;
 import bg.rezzo.model.Booking;
@@ -96,6 +98,14 @@ public class UserController {
 		
 		long id = (Long) session.getAttribute("userId");
 		return this.userDao.getUserBookings(id);
+	}
+	
+	
+	@PostMapping("/offers")
+	public Long addOffer(@RequestBody OfferInputDTO offerInputDTO, HttpServletRequest request, HttpServletResponse response) throws LoginException, ForbiddenException, SQLException, InvalidPlaceException {
+		isAdminlogged(request, response);
+		return this.userDao.addOffer(offerInputDTO);
+		
 	}
 	
 	

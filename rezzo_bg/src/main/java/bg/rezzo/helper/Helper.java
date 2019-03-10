@@ -84,6 +84,8 @@ public class Helper {
 	public static final String GET_CLUB = "select c.id from clubs c where c.music_id = ?;";
 	public static final String INSERT_CLUB = "insert into places values (null, ?, ?, ?, ?, ?, 10, ?, null, ?);";
 	public static final String INSERT_RESTAURANT = "insert into places values (null, ?, ?, ?, ?, ?, 10, ?, ?, null);";
+	public static final String INSERT_OFFER = "insert into offers values (null, ?, ?, ?, ?, ?);";
+	public static final String GET_RESTAURANT_ID = "select p.id from places p where p.name = ?";
 
 	public static final String UPDATE_SLOT_QUERY = "update slots set "
 			+ "free_tables = ? where id = ?;";
