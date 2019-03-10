@@ -32,7 +32,7 @@ public class Helper {
 	public static final String GET_ALL_EVENTS_QUERY = "select e.id, e.date, e.event_url, e.event_description, e.event_title, p.name\r\n" + 
 			"from events e\r\n" + 
 			"join places p on (e.place_id = p.id);";
-	public static final String GET_ALL_OFFERS_QUERY = "select o.id, o.offer_description, o.offer_title, o.offer_url, p.name\r\n" + 
+	public static final String GET_ALL_OFFERS_QUERY = "select o.id, o.offer_description, o.offer_title, o.offer_url, p.name, o.offer_price\r\n" + 
 			"from offers o\r\n" + 
 			"join places p on (o.place_id = p.id);";
 	public static final String GET_USER_BOOKINGS = "select b.id, b.number_of_tables\r\n" + 
