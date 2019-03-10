@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import bg.rezzo.dao.UserDAO;
 import bg.rezzo.dto.EditProfileDTO;
+import bg.rezzo.dto.EventInputDTO;
 import bg.rezzo.dto.ClubInputDTO;
 import bg.rezzo.dto.LoginDTO;
 import bg.rezzo.dto.OfferInputDTO;
@@ -106,6 +107,12 @@ public class UserController {
 		isAdminlogged(request, response);
 		return this.userDao.addOffer(offerInputDTO);
 		
+	}
+	
+	@PostMapping("/events")
+	public Long addEvent(@RequestBody EventInputDTO eventInputDTO, HttpServletRequest request, HttpServletResponse response) throws LoginException, ForbiddenException, SQLException, InvalidPlaceException {
+		isAdminlogged(request, response);
+		return this.userDao.addEvent(eventInputDTO);
 	}
 	
 	

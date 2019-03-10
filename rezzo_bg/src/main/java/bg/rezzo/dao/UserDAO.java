@@ -19,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import bg.rezzo.dto.EditProfileDTO;
+import bg.rezzo.dto.EventInputDTO;
 import bg.rezzo.dto.ClubInputDTO;
 import bg.rezzo.dto.LoginDTO;
 import bg.rezzo.dto.OfferInputDTO;
@@ -614,6 +615,29 @@ public class UserDAO {
 			long returnedId = keySet.getLong(1);
 			return returnedId;
 			
+		}
+		throw new InvalidPlaceException("There is no such place in the site!");
+	}
+
+	public Long addEvent(EventInputDTO eventInputDTO) throws SQLException, InvalidPlaceException {
+		Connection con = jdbcTemplate.getDataSource().getConnection();
+		PreparedStatement eventStatement = con.prepareStatement(Helper.INSERT_EVENT, Statement.RETURN_GENERATED_KEYS);
+		eventStatement.setDate(1, java.sql.Date.valueOf(eventInputDTO.getDate()));
+		eventStatement.setString(2, eventInputDTO.getUrl());
+		eventStatement.setString(3, eventInputDTO.getDescription());
+		eventStatement.setString(4, eventInputDTO.getTitle());
+		
+		PreparedStatement placeStatement = con.prepareStatement(Helper.GET_RESTAURANT_ID);
+		placeStatement.setString(1, eventInputDTO.getPlaceName());
+		ResultSet rs = placeStatement.executeQuery();
+		while(rs.next()) {
+			Long id = rs.getLong(1);
+			eventStatement.setLong(5, id);
+			eventStatement.executeUpdate();
+			ResultSet keySet = eventStatement.getGeneratedKeys();
+			keySet.next();
+			long returnedId = keySet.getLong(1);
+			return returnedId;
 		}
 		throw new InvalidPlaceException("There is no such place in the site!");
 	}
