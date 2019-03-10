@@ -74,12 +74,16 @@ public class Helper {
 			"from places\r\n" + 
 			"where name = ?), ?);";
 	public static final String INSERT_BOOKING_QUERY = "insert into bookings values(null, ?, ?);";
-	public static final String INSERT_CITY = "insert into cities values(null, ?)";
+	public static final String INSERT_CITY = "insert into cities values(null, ?);";
 	public static final String INSERT_ADDRESS = "insert into address values(null, ?, ?, ?);";
-	public static final String INSERT_RESTAURANT = "insert into places values (null, ?, ?, ?, ?, ?, 10, ?, ?, null)";
-	public static final String INSERT_KITCHEN = "insert into kitchens values(null, ?)";
-	public static final String INSERT_MIDDLE = "insert into restaurants values (null, ?)";
-	public static final String GET_RESTAURANT = "select r.id from restaurants r where r.kitchen_id = ?";
+	public static final String INSERT_KITCHEN = "insert into kitchens values(null, ?);";
+	public static final String INSERT_GENRE = "insert into music values(null, ?);";
+	public static final String INSERT_RESTAURANT_MIDDLE = "insert into restaurants values (null, ?);";
+	public static final String INSERT_CLUB_MIDDLE = "insert into clubs values (null, ?);";
+	public static final String GET_RESTAURANT = "select r.id from restaurants r where r.kitchen_id = ?;";
+	public static final String GET_CLUB = "select c.id from clubs c where c.music_id = ?;";
+	public static final String INSERT_CLUB = "insert into places values (null, ?, ?, ?, ?, ?, 10, ?, null, ?);";
+	public static final String INSERT_RESTAURANT = "insert into places values (null, ?, ?, ?, ?, ?, 10, ?, ?, null);";
 
 	public static final String UPDATE_SLOT_QUERY = "update slots set "
 			+ "free_tables = ? where id = ?;";
