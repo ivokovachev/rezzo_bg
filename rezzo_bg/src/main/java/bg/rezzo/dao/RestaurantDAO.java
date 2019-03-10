@@ -100,12 +100,12 @@ public class RestaurantDAO {
 				+ "join places p on (r.id = p.restaurant_id) "
 				+ "join offers o on (p.id = o.place_id)");
 		
-		List<RestaurantDTO> offers = new LinkedList<RestaurantDTO>();
+		List<RestaurantDTO> restaurants = new LinkedList<RestaurantDTO>();
 		while(rs.next()) {
-			offers.add(new RestaurantDTO(rs.getLong(1), rs.getString(2), rs.getString(3),
+			restaurants.add(new RestaurantDTO(rs.getLong(1), rs.getString(2), rs.getString(3),
 					rs.getLong(4), rs.getDouble(5)));
 		}
 		
-		return offers;
+		return restaurants;
 	}
 }

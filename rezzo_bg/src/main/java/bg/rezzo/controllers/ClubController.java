@@ -39,6 +39,15 @@ public class ClubController {
 		}
 	}
 	
-
+	@GetMapping("/clubs/events")
+	public List<ClubDTO> getAllRestaurantsWithEvents() throws SQLException {
+		return this.clubDAO.getAllClubsWithEvents();
+	}
+	
+//	@GetMapping("/clubs/offers")
+//	public List<ClubDTO> getAllRestaurantsWithOffers() throws SQLException {
+//		return this.clubDAO.getAllClubsWithOffers();
+//	}
+//	
 
 }
