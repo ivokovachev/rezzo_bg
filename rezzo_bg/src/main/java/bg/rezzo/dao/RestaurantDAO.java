@@ -5,8 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Comparator;
 import java.util.LinkedList;
-import java.util.List;
+import java.util.List;import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -35,10 +37,14 @@ public class RestaurantDAO {
 					restaurants.add(new RestaurantDTO(resultSet.getLong(1), resultSet.getString(2), resultSet.getString(3), resultSet.getLong(4), resultSet.getDouble(5)));
 			}
 		}
+		
 		if(sortBy != null) {
 			switch(sortBy) {
-			case "restaurantName": restaurants.sort((r1, r2) -> r1.getRestaurantName().compareTo(r2.getRestaurantName()));
-			case "raitng": restaurants.sort((r1, r2) -> (int)(r2.getRating() - r1.getRating()));
+			case "restaurantName": restaurants.sort((r1, r2) -> r1.getRestaurantName().compareTo(r2.getRestaurantName()));break;
+			case "rating": restaurants = restaurants
+					.stream()
+					.sorted((r1, r2) -> (new Double(r1.getRating()).compareTo(new Double(r2.getRating()))))
+					.collect(Collectors.toList()); break;
 			default: return restaurants;
 				
 			}
