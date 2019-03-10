@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.hibernate.result.UpdateCountOutput;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,6 +39,7 @@ public class UserDAO {
 	private JdbcTemplate jdbcTemplate;
 	private List<Booking> bookings = new LinkedList<Booking>();
 	
+	
 	public UserDAO() throws SQLException {}
 	
 	public User login(LoginDTO user) throws SQLException {
@@ -49,8 +49,6 @@ public class UserDAO {
 		PreparedStatement st = con.prepareStatement(Helper.QUERY);
 		st.setString(1, user.getEmail());
 		ResultSet rs = st.executeQuery();
-		
-
 		
 		User u = null;
 		while(rs.next()) {
@@ -337,6 +335,8 @@ public class UserDAO {
 		
 		return true;
 	}
+	
+	
 	@Autowired
 	private void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;
@@ -450,7 +450,6 @@ public class UserDAO {
 		restaurantStatement.setLong(6, addressId);
 		
 		if(!whichKitchen.equals("")) {
-//			clubStatement.setLong(7, kitchenId);
 			PreparedStatement prepStatement = con.prepareStatement(Helper.GET_RESTAURANT, Statement.RETURN_GENERATED_KEYS);
 			prepStatement.setLong(1, kitchenId);
 			ResultSet rSet = prepStatement.executeQuery();
@@ -490,50 +489,6 @@ public class UserDAO {
 		}
 		return returnedId;
 	}
-	
-//	private Long updateCityAndAddress() {
-//		Connection con = this.jdbcTemplate.getDataSource().getConnection();
-//		Statement statement = con.createStatement();
-//		ResultSet rs = statement.executeQuery("select * from cities");
-//		Map<String, Long> cities = new HashMap<String, Long>();
-//		while(rs.next()) {
-//			cities.put(rs.getString(2), rs.getLong(1));
-//		}
-//		String whichCity = "";
-//		long whichId = -1;
-//		for(Entry<String, Long> cityEntry : cities.entrySet()) {
-//			if(cityEntry.getKey().equals(restaurantInputDTO.getCity())) {
-//				whichCity = cityEntry.getKey();
-//				whichId = cityEntry.getValue();
-//				break;
-//			}
-//		}
-//		PreparedStatement addressStatement = con.prepareStatement(Helper.INSERT_ADDRESS, Statement.RETURN_GENERATED_KEYS);
-//		addressStatement.setString(1, restaurantInputDTO.getStreet());
-//		addressStatement.setString(2, restaurantInputDTO.getCountry());
-//
-//		if(!whichCity.equals("")) {
-//			addressStatement.setLong(3, whichId);
-//			addressStatement.executeUpdate();
-//		} else {
-//			PreparedStatement cityStatement = con.prepareStatement(Helper.INSERT_CITY, Statement.RETURN_GENERATED_KEYS);
-//			cityStatement.setString(1, restaurantInputDTO.getCity());
-//			cityStatement.executeUpdate();
-//			ResultSet keys = cityStatement.getGeneratedKeys();
-//			long id = -1;
-//			while(keys.next()) {
-//				id = keys.getLong(1);
-//			}
-//			addressStatement.setLong(3,id);
-//			addressStatement.executeUpdate();
-//		}
-//		ResultSet set = addressStatement.getGeneratedKeys();
-//		long addressId = -1;
-//		while(set.next()) {
-//			 addressId = set.getLong(1);
-//		}
-//		return addressId;
-//	}
 
 
 	public Long addClub(ClubInputDTO clubInputDTO) throws SQLException {
@@ -593,10 +548,15 @@ public class UserDAO {
 				break;
 			}
 		}
+		
+		Integer start = Integer.parseInt(clubInputDTO.getStartWorkingDay())+2;
+		Integer end = Integer.parseInt(clubInputDTO.getEndWorkingDay())+2;
 		PreparedStatement clubStatement = con.prepareStatement(Helper.INSERT_CLUB, Statement.RETURN_GENERATED_KEYS);
 		clubStatement.setString(1, clubInputDTO.getClubName());
-		clubStatement.setTime(2, java.sql.Time.valueOf(clubInputDTO.getStartWorkingDay()));
-		clubStatement.setTime(3, java.sql.Time.valueOf(clubInputDTO.getEndWorkingDay()));
+		System.out.println(clubInputDTO.getStartWorkingDay());
+		System.out.println(clubInputDTO.getEndWorkingDay());
+		clubStatement.setTime(2, java.sql.Time.valueOf(start.toString()+":00:00"));
+		clubStatement.setTime(3, java.sql.Time.valueOf(end.toString()+":00:00"));
 		clubStatement.setDouble(4, clubInputDTO.getRating());
 		clubStatement.setString(5, clubInputDTO.getDescription());
 		clubStatement.setLong(6, addressId);
@@ -641,6 +601,7 @@ public class UserDAO {
 		}
 		return returnedId;
 	}
+
 
 	public Long addOffer(OfferInputDTO offerInputDTO) throws SQLException, InvalidPlaceException {
 		Connection con = jdbcTemplate.getDataSource().getConnection();
