@@ -7,8 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -76,16 +75,12 @@ public class RestaurantDAO {
 	public List<RestaurantDTO> getAllRestaurantsWithEvents() throws SQLException {
 		Connection con = this.jdbcTemplate.getDataSource().getConnection();
 		Statement st = con.createStatement();
-		ResultSet rs = st.executeQuery("select p.id, p.name, k.name, k.id, p.rating "
-				+ "from kitchens k "
-				+ "join restaurants r on (k.id = r.kitchen_id) "
-				+ "join places p on (r.id = p.restaurant_id) "
-				+ "join events e on (p.id = e.place_id)");
+		ResultSet rs = st.executeQuery(Helper.GET_ALL_RESTAURANTS_WITH_EVENTS_QUERY);
 		
 		List<RestaurantDTO> restaurants = new LinkedList<RestaurantDTO>();
 		while(rs.next()) {
-			restaurants.add(new RestaurantDTO(rs.getLong(1), rs.getString(2), rs.getString(3),
-					rs.getLong(4), rs.getDouble(5)));
+			restaurants.add(new RestaurantDTO(rs.getLong(1), rs.getString(2),
+					rs.getString(3), rs.getLong(4), rs.getDouble(5)));
 		}
 		
 		return restaurants;
@@ -94,11 +89,7 @@ public class RestaurantDAO {
 	public List<RestaurantDTO> getAllRestaurantsWithOffers() throws SQLException {
 		Connection con = this.jdbcTemplate.getDataSource().getConnection();
 		Statement st = con.createStatement();
-		ResultSet rs = st.executeQuery("select p.id, p.name, k.name, k.id, p.rating "
-				+ "from kitchens k "
-				+ "join restaurants r on (k.id = r.kitchen_id) "
-				+ "join places p on (r.id = p.restaurant_id) "
-				+ "join offers o on (p.id = o.place_id)");
+		ResultSet rs = st.executeQuery(Helper.GET_ALL_RESTAURANTS_WITH_OFFERS_QUERY);
 		
 		List<RestaurantDTO> restaurants = new LinkedList<RestaurantDTO>();
 		while(rs.next()) {

@@ -75,4 +75,24 @@ public class Helper {
 	public static final String INSERT_BOOKING_QUERY = "insert into bookings values(null, ?, ?);";
 	public static final String UPDATE_SLOT_QUERY = "update slots set "
 			+ "free_tables = ? where id = ?;";
+	public static final String GET_ALL_RESTAURANTS_WITH_EVENTS_QUERY = "select p.id, p.name, k.name, k.id, p.rating "
+				+ "from kitchens k "
+				+ "join restaurants r on (k.id = r.kitchen_id) "
+				+ "join places p on (r.id = p.restaurant_id) "
+				+ "join events e on (p.id = e.place_id)";
+	public static final String GET_ALL_RESTAURANTS_WITH_OFFERS_QUERY = "select p.id, p.name, k.name, k.id, p.rating "
+				+ "from kitchens k "
+				+ "join restaurants r on (k.id = r.kitchen_id) "
+				+ "join places p on (r.id = p.restaurant_id) "
+				+ "join offers o on (p.id = o.place_id)";
+	public static final String GET_ALL_CLUBS_WITH_EVENTS_QUERY = "select p.id, p.name, m.genre, m.id, p.rating "
+				+ "from music m "
+				+ "join clubs c on (m.id = c.music_id) "
+				+ "join places p on (c.id = p.restaurant_id) "
+				+ "join events e on (p.id = e.place_id)";
+	public static final String GET_ALL_CLUBS_WITH_OFFERS_QUERY = "select p.id, p.name, m.genre, m.id, p.rating "
+				+ "from music m "
+				+ "join clubs c on (m.id = c.music_id) "
+				+ "join places p on (c.id = p.restaurant_id) "
+				+ "join offers o on (p.id = o.place_id)";
 }

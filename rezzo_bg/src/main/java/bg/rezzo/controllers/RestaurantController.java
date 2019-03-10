@@ -21,11 +21,7 @@ public class RestaurantController {
 	
 	@Autowired
 	private RestaurantDAO restaurantDAO;
-	
-//	@GetMapping("/restaurants")
-//	public List<RestaurantDTO> getAllRestaurants() throws SQLException {
-//		return this.restaurantDAO.getAllRestaurants();
-//	}
+
 	
 	@GetMapping("/restaurants")
 	public List<RestaurantDTO> getAllRestaurants(@RequestParam (name = "sortBy", required = false) String sortBy,
