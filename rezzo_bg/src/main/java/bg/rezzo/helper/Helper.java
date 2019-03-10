@@ -9,7 +9,7 @@ public class Helper {
 			"join address a on (u.address_id = a.id)\r\n" + 
 			"join cities c on (a.city_id = c.id);\r\n" + 
 			"";
-	public static String QUERY = "select u.id, u.email, u.password, u.telephone, a.id, a.street, a.country, c.name\r\n" + 
+	public static String QUERY = "select u.id, u.email, u.password, u.telephone, a.id, a.street, a.country, c.name, u.is_admin\r\n" + 
 			"from users u\r\n" + 
 			"join address a on (u.address_id = a.id)\r\n" + 
 			"join cities c on (a.city_id = c.id)\r\n" + 
@@ -67,12 +67,16 @@ public class Helper {
 			"join places p on (a.id = p.address_id)\r\n" + 
 			"join restaurants r on (p.restaurant_id = r.id)\r\n" + 
 			"join kitchens k on (r.kitchen_id = k.id)\r\n" + 
-			"where p.id = ?;"+
-			"join slots s on (p.id = s.places_id)\r\n" + 
-			"where p.name = ? and s.date = ? and (s.start >= ? and s.end <= ?);";
+			"where p.id = ?;";
 	public static final String INSERT_SLOT_QUERY = "insert into slots values(null, ?, ?, ?, ?, ?, \r\n" + 
 			"(select id\r\n" + 
 			"from places\r\n" + 
 			"where name = ?), ?);";
 	public static final String INSERT_BOOKING_QUERY = "insert into bookings values(null, ?, ?);";
+	public static final String INSERT_CITY = "insert into cities values(null, ?)";
+	public static final String INSERT_ADDRESS = "insert into address values(null, ?, ?, ?);";
+	public static final String INSERT_RESTAURANT = "insert into places values (null, ?, ?, ?, ?, ?, 10, ?, ?, null)";
+	public static final String INSERT_KITCHEN = "insert into kitchens values(null, ?)";
+	public static final String INSERT_MIDDLE = "insert into restaurants values (null, ?)";
+	public static final String GET_RESTAURANT = "select r.id from restaurants r where r.kitchen_id = ?";
 }

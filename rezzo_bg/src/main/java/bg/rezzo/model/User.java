@@ -18,6 +18,7 @@ public class User {
 	private String telephone;
 	private LocalDate dateOfBirth;
 	private Address address;
+	private int isAdmin;
 	
 	
 	@Override
