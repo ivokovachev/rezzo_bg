@@ -25,8 +25,11 @@ public class RestaurantController {
 	
 	@GetMapping("/restaurants")
 	public List<RestaurantDTO> getAllRestaurants(@RequestParam (name = "sortBy", required = false) String sortBy,
-			@RequestParam (name = "kitchenId", required = false) Long kitchenId) throws SQLException{
-		return restaurantDAO.getAllRestaurants(sortBy, kitchenId);
+			@RequestParam (name = "kitchenId", required = false) Long kitchenId, HttpServletResponse response) throws SQLException{
+		if(this.restaurantDAO.getAllRestaurants(sortBy, kitchenId).size() == 0) {
+			response.setStatus(404);
+		}
+		return this.restaurantDAO.getAllRestaurants(sortBy, kitchenId);
 		
 	}
 	

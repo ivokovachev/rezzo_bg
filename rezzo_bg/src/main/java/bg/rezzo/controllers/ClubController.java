@@ -23,7 +23,10 @@ public class ClubController {
 	
 	@GetMapping("/clubs")
 	public List<ClubDTO> getAllClubs(@RequestParam(name = "sortBy", required = false) String sortBy,
-			@RequestParam(name = "clubId", required = false) Long clubId) throws SQLException {
+			@RequestParam(name = "clubId", required = false) Long clubId, HttpServletResponse response) throws SQLException {
+		if(this.clubDAO.getAllClubs(sortBy, clubId).size() == 0) {
+			response.setStatus(404);
+		}
 		return this.clubDAO.getAllClubs(sortBy, clubId);
 	}
 	

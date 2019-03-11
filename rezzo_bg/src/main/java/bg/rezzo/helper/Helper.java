@@ -127,4 +127,14 @@ public class Helper {
 				+ "date_of_birth=? "
 				+ "where id = ?;";
 	public static final String UPDATE_ADDRESS_QUERY = "update address set country=? where id=?;";
+	public static final String GET_CLUBS_BY_CITY = "select p.id, p.name, p.start_working_day, p.end_working_day, p.rating, p.description, p.max_free_tables, a.street, a.country, ci.name, m.genre\r\n" + 
+			"from cities ci \r\n" + 
+			"join address a on (ci.id = a.city_id)\r\n" + 
+			"join places p on (a.id = p.address_id)\r\n" + 
+			"join clubs c on (p.club_id = c.id)\r\n" + 
+			"join music m on (c.music_id = m.id)\r\n" + 
+			"where ci.id = ?;";
+		
+		
+	
 }

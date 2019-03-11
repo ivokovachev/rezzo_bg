@@ -13,4 +13,5 @@ public class ClubOutputDTO {
 	private String clubName;
 	private String genreName;
 	private double rating;
+	private String city;
 }
