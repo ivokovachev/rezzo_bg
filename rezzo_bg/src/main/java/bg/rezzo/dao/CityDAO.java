@@ -51,6 +51,8 @@ public class CityDAO {
 		return outputRestaurants;
 	}
 	
+	
+	
 	@Autowired
 	public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
 		this.jdbcTemplate = jdbcTemplate;

@@ -19,9 +19,11 @@ public class CityController {
 	@Autowired
 	private CityDAO cityDAO;
 	
-	@GetMapping("/cities/{cityId}")
+	@GetMapping("/restaurants/cities/{cityId}")
 	public List<RestaurantOutputDTO> getRestaurantsByCity (@PathVariable long cityId, HttpServletResponse response) throws SQLException {
 			return this.cityDAO.getRestaurantsByCity(cityId);
 		
 	}
+	
+	
 }
