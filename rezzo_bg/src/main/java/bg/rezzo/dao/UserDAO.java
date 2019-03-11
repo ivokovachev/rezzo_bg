@@ -13,13 +13,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.swing.text.ChangedCharSetException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import bg.rezzo.dto.EditProfileDTO;
 import bg.rezzo.dto.EventInputDTO;
+import bg.rezzo.dto.ChangePasswordDTO;
 import bg.rezzo.dto.ClubInputDTO;
 import bg.rezzo.dto.LoginDTO;
 import bg.rezzo.dto.OfferInputDTO;
@@ -55,13 +59,16 @@ public class UserDAO {
 			u = new User(rs.getLong(1), rs.getString(2), rs.getString(3),
 					rs.getString(4), LocalDate.now(), new Address(rs.getLong(5),
 							rs.getString(6), rs.getString(7), rs.getString(8)), rs.getInt(9));
+			System.out.println("User: " + u);
 		}
 		
+	
 		boolean areTheSame = false;
 		if(u != null) {
+			System.out.println("haha");
 			areTheSame = passwordEncoder.matches(user.getPassword(), u.getPassword());
 		}
-		
+		System.out.println(areTheSame);
 		if(u != null && areTheSame) {
 			this.loadUserBookings(u.getId());
 		}
@@ -82,6 +89,18 @@ public class UserDAO {
 		}
 		
 		return u;
+	}
+	
+	public void changePassword(long userId, ChangePasswordDTO changePassword) throws SQLException {
+		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+		String hashedPassword = passwordEncoder.encode(changePassword.getNewPassword());
+		
+		Connection con = this.jdbcTemplate.getDataSource().getConnection();
+		PreparedStatement ps = con.prepareStatement("update users set password=? "
+				+ "where id=?;");
+		ps.setString(1, hashedPassword);
+		ps.setLong(2, userId);
+		ps.executeUpdate();
 	}
 	
 	public User editProfile(long id, EditProfileDTO user) throws SQLException {
