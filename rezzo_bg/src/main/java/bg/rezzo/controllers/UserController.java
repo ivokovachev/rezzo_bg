@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import bg.rezzo.dao.UserDAO;
 import bg.rezzo.dto.EditProfileDTO;
 import bg.rezzo.dto.EventInputDTO;
+import bg.rezzo.dto.ChangePasswordDTO;
 import bg.rezzo.dto.ClubInputDTO;
 import bg.rezzo.dto.LoginDTO;
 import bg.rezzo.dto.OfferInputDTO;
@@ -75,6 +76,18 @@ public class UserController {
 		
 		long id = (Long) session.getAttribute("userId");
 		return this.userDao.editProfile(id, user);
+	}
+	
+	@PutMapping("/profile/password")
+	public void changePassword(@RequestBody ChangePasswordDTO changePassword, HttpServletRequest request, HttpServletResponse response) throws SQLException {
+		HttpSession session = request.getSession();
+		
+		if(session.getAttribute("userId") == null) {
+			response.setStatus(401);
+			return;
+		}
+		long id = (Long) session.getAttribute("userId");
+		this.userDao.changePassword(id, changePassword);
 	}
 	
 	@PostMapping("/signout")
