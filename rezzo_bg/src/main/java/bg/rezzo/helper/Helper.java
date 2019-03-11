@@ -110,4 +110,12 @@ public class Helper {
 				+ "join clubs c on (m.id = c.music_id) "
 				+ "join places p on (c.id = p.restaurant_id) "
 				+ "join offers o on (p.id = o.place_id)";
+	public static final String GET_RESTAURANTS_BY_CITY = "select p.id, p.name, p.start_working_day, p.end_working_day, p.rating, p.description, p.max_free_tables, a.street, a.country, ci.name, k.name\r\n" +
+			"from cities ci \r\n" + 
+			"join address a on (ci.id = a.city_id)\r\n" + 
+			"join places p on (a.id = p.address_id)\r\n" + 
+			"join restaurants r on (p.restaurant_id = r.id)\r\n" + 
+			"join kitchens k on (r.kitchen_id = k.id)\r\n" + 
+			"where ci.id = ?;";
+	public static final String GET_CITY = "select c.name from cities c where c.id = ?";
 }
