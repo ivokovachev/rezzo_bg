@@ -8,10 +8,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.swing.text.ChangedCharSetException;
 
@@ -31,6 +33,7 @@ import bg.rezzo.dto.RegistrationDTO;
 import bg.rezzo.dto.ReservationDTO;
 import bg.rezzo.dto.RestaurantInputDTO;
 import bg.rezzo.exception.InvalidPlaceException;
+import bg.rezzo.exception.NoSuchCityException;
 import bg.rezzo.helper.Helper;
 import bg.rezzo.model.Address;
 import bg.rezzo.model.Booking;
@@ -188,51 +191,26 @@ public class UserDAO {
 	}
 	
 	
-	public boolean registration(RegistrationDTO user) throws SQLException {
+	public boolean registration(RegistrationDTO user) throws Exception {
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		String hashedPassword = passwordEncoder.encode(user.getPassword());
 		
-		List<String> emails = new LinkedList<String>();
 		Connection con = this.jdbcTemplate.getDataSource().getConnection();
 		con.setAutoCommit(false);
 		try {
-			PreparedStatement st = con.prepareStatement(Helper.GET_ALL_USERS_EMAILS_QUERY);
-			ResultSet rs = st.executeQuery();
-			while(rs.next()) {
-				emails.add(rs.getString(1));
-			}
+			Set<String> emails = new HashSet<String>();
+			emails = this.getAllUsersEmails(con);
 			
 			if(emails.contains(user.getEmail())) {
 				return false;
 			}
 			
-			PreparedStatement insertCityStatement = con.prepareStatement(Helper.INSERT_CITY_QUERY,
-					Statement.RETURN_GENERATED_KEYS);
-			insertCityStatement.setString(1, user.getCity());
-			insertCityStatement.executeUpdate();
+			long keyOfLastEnteredCity = this.insertCityInDB(user.getCity(), con);
+			long keyOfLastEnteredAddress = this.insertAddressInDB(user.getStreet(),
+					user.getCountry(), keyOfLastEnteredCity, con); 
 			
-			ResultSet rs2 = insertCityStatement.getGeneratedKeys();
-			rs2.next();
-			long primaryKey1 = rs2.getLong(1);
-			
-			PreparedStatement insertAddressStatement = con.prepareStatement(Helper.INSERT_ADDRESS_QUERY,
-					Statement.RETURN_GENERATED_KEYS);
-			insertAddressStatement.setString(1, user.getStreet());
-			insertAddressStatement.setLong(2, primaryKey1);
-			insertAddressStatement.executeUpdate();
-			
-			ResultSet rs3 = insertAddressStatement.getGeneratedKeys();
-			rs3.next();
-			long primaryKey2 = rs3.getLong(1);
-			
-			PreparedStatement insertUserStatement = con.prepareStatement(Helper.INSERT_USER_QUERY,
-					Statement.RETURN_GENERATED_KEYS);
-			insertUserStatement.setString(1, user.getEmail());
-			insertUserStatement.setString(2, hashedPassword);
-			insertUserStatement.setString(3, user.getTelephone());
-			insertUserStatement.setDate(4, Date.valueOf(user.getDateOfBirth()));
-			insertUserStatement.setLong(5, primaryKey2);
-			insertUserStatement.executeUpdate();
+			this.insertUserInDB(user.getEmail(), hashedPassword, user.getPassword(),
+					user.getDateOfBirth(), keyOfLastEnteredAddress, con);
 			con.commit();
 			
 			return true;
@@ -660,4 +638,73 @@ public class UserDAO {
 		}
 		throw new InvalidPlaceException("There is no such place in the site!");
 	}
+
+	private long insertCityInDB(String city, Connection con) throws SQLException, NoSuchCityException {
+		
+		if(city == null || city.equals("")) {
+			throw new NoSuchCityException("Invalid city!");
+		}
+
+		Statement st = con.createStatement();
+		ResultSet allCitiesResultSet = st.executeQuery(Helper.GET_ALL_CITITES_QUERY);
+		Map<String, Long> allCities = new HashMap<String, Long>();
+		while(allCitiesResultSet.next()) {
+			allCities.put(allCitiesResultSet.getString(2), allCitiesResultSet.getLong(1));
+		}
+		
+		if(allCities.containsKey(city)) {
+			return allCities.get(city);
+		}
+		
+		PreparedStatement insertCityStatement = con.prepareStatement(Helper.INSERT_CITY_QUERY,
+				Statement.RETURN_GENERATED_KEYS);
+		insertCityStatement.setString(1, city);
+		insertCityStatement.executeUpdate();
+		
+		ResultSet rs = insertCityStatement.getGeneratedKeys();
+		rs.next();
+		long keyOfLastEnteredCity = rs.getLong(1);
+		
+		return keyOfLastEnteredCity;
+	}
+
+	private long insertAddressInDB(String street, String country, long cityId, Connection con) throws SQLException {
+		
+		PreparedStatement insertAddressStatement = con.prepareStatement(Helper.INSERT_ADDRESS_QUERY,
+				Statement.RETURN_GENERATED_KEYS);
+		insertAddressStatement.setString(1, street);
+		insertAddressStatement.setLong(2, cityId);
+		insertAddressStatement.executeUpdate();
+		
+		ResultSet rs = insertAddressStatement.getGeneratedKeys();
+		rs.next();
+		long keyOfLastEnteredAddress = rs.getLong(1);
+	
+		return keyOfLastEnteredAddress;
+	}
+	
+	private void insertUserInDB(String email, String hashedPassword,
+			String telephone, LocalDate dateOfBirth, long keyOfLastEnteredAddress, Connection con) throws SQLException {
+
+		PreparedStatement insertUserStatement = con.prepareStatement(Helper.INSERT_USER_QUERY,
+				Statement.RETURN_GENERATED_KEYS);
+		insertUserStatement.setString(1, email);
+		insertUserStatement.setString(2, hashedPassword);
+		insertUserStatement.setString(3, telephone);
+		insertUserStatement.setDate(4, Date.valueOf(dateOfBirth));
+		insertUserStatement.setLong(5, keyOfLastEnteredAddress);
+		insertUserStatement.executeUpdate();
+	}
+
+	private Set<String> getAllUsersEmails(Connection con) throws SQLException {
+		Set<String> emails = new HashSet<String>();
+		PreparedStatement st = con.prepareStatement(Helper.GET_ALL_USERS_EMAILS_QUERY);
+		ResultSet rs = st.executeQuery();
+		while(rs.next()) {
+			emails.add(rs.getString(1));
+		}
+		
+		return emails;
+	}
+	
 }

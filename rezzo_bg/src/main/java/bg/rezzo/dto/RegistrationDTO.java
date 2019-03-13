@@ -14,6 +14,7 @@ public class RegistrationDTO {
 	private String password;
 	private String street;
 	private String city;
+	private String country;
 	private String telephone;
 	private LocalDate dateOfBirth;
 }

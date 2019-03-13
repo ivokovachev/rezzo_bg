@@ -135,6 +135,5 @@ public class Helper {
 			"join music m on (c.music_id = m.id)\r\n" + 
 			"where ci.id = ?;";
 		
-		
 	
 }

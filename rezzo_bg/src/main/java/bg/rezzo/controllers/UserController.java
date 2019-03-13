@@ -78,7 +78,7 @@ public class UserController {
 		return this.userDao.editProfile(id, user);
 	}
 	
-	@PutMapping("/profile/password")
+	@PutMapping("/profile/password---")
 	public void changePassword(@RequestBody ChangePasswordDTO changePassword, HttpServletRequest request, HttpServletResponse response) throws SQLException {
 		HttpSession session = request.getSession();
 		
@@ -97,7 +97,7 @@ public class UserController {
 	}
 	
 	@PostMapping("/registration")
-	public void registration(@RequestBody RegistrationDTO user) throws SQLException {
+	public void registration(@RequestBody RegistrationDTO user) throws Exception {
 		this.userDao.registration(user);
 	}
 	
