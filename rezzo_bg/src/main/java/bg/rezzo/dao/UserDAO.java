@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.swing.text.ChangedCharSetException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -68,7 +67,6 @@ public class UserDAO {
 	
 		boolean areTheSame = false;
 		if(u != null) {
-			System.out.println("haha");
 			areTheSame = passwordEncoder.matches(user.getPassword(), u.getPassword());
 		}
 		System.out.println(areTheSame);
@@ -108,20 +106,7 @@ public class UserDAO {
 	
 	public User editProfile(long id, EditProfileDTO user) throws SQLException {
 		Connection con = this.jdbcTemplate.getDataSource().getConnection();
-		PreparedStatement st = con.prepareStatement("select u.*, a.street, c.name, a.country "
-				+ "from users u "
-				+ "join address a on(u.address_id = a.id) "
-				+ "join cities c on (a.city_id = c.id) "
-				+ " where u.id = ?;");
-		st.setLong(1, id);
-		ResultSet rs = st.executeQuery();
-		User u = null;
-		while(rs.next()) {
-			u = new User(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getString(4),
-					rs.getDate(5).toLocalDate(),
-					new Address(rs.getLong(6), rs.getString(8), rs.getString(9), rs.getString(10)),
-					rs.getInt(7));
-		}
+		User u = this.getUserById(con, id);
 		
 		Address address = u.getAddress();
 		if(!(u.getTelephone().equals(user.getTelephone()) || user.getTelephone().equals(""))) {
@@ -133,10 +118,7 @@ public class UserDAO {
 		if(!(u.getAddress().getStreet().equals(user.getStreet()) || user.getStreet().equals(""))) {
 			address.setStreet(user.getStreet());
 			u.setAddress(address);
-			PreparedStatement streetStatement = con.prepareStatement("update address set street=? where id=?;");
-			streetStatement.setString(1, user.getStreet());
-			streetStatement.setLong(2, u.getAddress().getId());
-			streetStatement.executeUpdate();
+			this.updateAddress(con, user.getStreet(), u.getAddress().getId());
 		}
 		if(!(u.getAddress().getCity().equals(user.getCity()) || user.getCity().equals(""))) {
 			address.setCity(user.getCity());
@@ -236,36 +218,14 @@ public class UserDAO {
 	}
 	
 	public boolean makeReservation(ReservationDTO reservation, long id) throws SQLException {
-		List<Slot> slots = new LinkedList<Slot>();
-		Integer reservationStart = Integer.parseInt(reservation.getStart())-1;
-		Integer reservationEnd = Integer.parseInt(reservation.getEnd())-1;
-		
 		Connection con = this.jdbcTemplate.getDataSource().getConnection();		
-		PreparedStatement st = con.prepareStatement(Helper.GET_SLOTS);
-		st.setString(1, reservation.getPlaceName());
-		st.setDate(2, java.sql.Date.valueOf(reservation.getDate()));
-		st.setString(3, reservationStart.toString()+":00:00");
-		st.setString(4, reservationEnd.toString()+":00:00");
-		ResultSet rs = st.executeQuery();
-
-		while(rs.next()) {
-			slots.add(new Slot(rs.getLong(1), rs.getInt(2), rs.getDouble(3),
-					rs.getTime(4).toString(), rs.getTime(5).toString(),
-					rs.getDate(6).toLocalDate(), rs.getLong(7), rs.getLong(8)));
-		}
+		List<Slot> slots = slots = this.getAllSlots(con, reservation);
 
 		if(slots.isEmpty()) {		
-			PreparedStatement insertBookingStatement = con.prepareStatement(Helper.INSERT_BOOKING_QUERY,
-					Statement.RETURN_GENERATED_KEYS);
-			insertBookingStatement.setInt(1, reservation.getNumberOfTables());
-			insertBookingStatement.setLong(2, id);
-			insertBookingStatement.executeUpdate();
-			
-			ResultSet rsKeys = insertBookingStatement.getGeneratedKeys();
-			rsKeys.next();
-			long bookingId = rsKeys.getLong(1);
+			long bookingId = this.insertBooking(con, reservation, id);
 			this.insertSlots(reservation, bookingId);
 			this.bookings.add(new Booking(bookingId, reservation.getNumberOfTables(), null));
+			
 			return true;
 		} 
 		
@@ -274,22 +234,13 @@ public class UserDAO {
 				return false;
 			}
 		}
-		
-		PreparedStatement insertBookingStatement = con.prepareStatement(Helper.INSERT_BOOKING_QUERY,
-				Statement.RETURN_GENERATED_KEYS);
-		
-		insertBookingStatement.setInt(1, reservation.getNumberOfTables());
-		insertBookingStatement.setLong(2, id);
-		insertBookingStatement.executeUpdate();
-		ResultSet rsKeys = insertBookingStatement.getGeneratedKeys();
-		rsKeys.next();
-		long bookingId = rsKeys.getLong(1);
+		long bookingId = this.insertBooking(con, reservation, id);
 		
 		int start = Integer.parseInt(reservation.getStart());
 		int end = Integer.parseInt(reservation.getEnd());
 		int diff = end - start;
 		if(start > end) {
-			diff = end+24-start;
+			diff = end - start + 24;
 		}
 		if(slots.size() < diff) {
 			for(int i = start; i <= end-1; i++) {
@@ -300,10 +251,7 @@ public class UserDAO {
 						j -= 24;
 					}
 					if(j == Integer.parseInt(s.getStart().split(":")[0])+1) {
-						PreparedStatement ps = con.prepareStatement(Helper.UPDATE_SLOT_QUERY);
-						ps.setInt(1, s.getFreeTables()-reservation.getNumberOfTables());
-						ps.setLong(2, s.getId());
-						ps.executeUpdate();
+						this.updateSlot(con, s.getFreeTables(), reservation.getNumberOfTables(), s.getId());
 						isPresented = true;
 					}
 				}
@@ -314,12 +262,13 @@ public class UserDAO {
 				}
 			}
 		} else {
-			for(Slot s : slots) {
-				PreparedStatement ps = con.prepareStatement(Helper.UPDATE_SLOT_QUERY);
-				ps.setInt(1, s.getFreeTables()-reservation.getNumberOfTables());
-				ps.setLong(2, s.getId());
-				ps.executeUpdate();
-			}
+			slots.forEach(slot -> {
+				try {
+					this.updateSlot(con, slot.getFreeTables(), reservation.getNumberOfTables(), slot.getId());
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			});
 		}
 		
 		return true;
@@ -705,6 +654,71 @@ public class UserDAO {
 		}
 		
 		return emails;
+	}
+	
+	private List<Slot> getAllSlots(Connection con, ReservationDTO reservation) throws SQLException {
+		List<Slot> slots = new LinkedList<Slot>();
+		PreparedStatement st = con.prepareStatement(Helper.GET_SLOTS);
+		st.setString(1, reservation.getPlaceName());
+		st.setDate(2, java.sql.Date.valueOf(reservation.getDate()));
+		st.setString(3, reservation.getStart()+":00:00");
+		st.setString(4, reservation.getEnd()+":00:00");
+		ResultSet rs = st.executeQuery();
+
+		while(rs.next()) {
+			slots.add(new Slot(rs.getLong(1), rs.getInt(2), rs.getDouble(3),
+					rs.getTime(4).toString(), rs.getTime(5).toString(),
+					rs.getDate(6).toLocalDate(), rs.getLong(7), rs.getLong(8)));
+		}	
+		
+		return slots;
+	}
+	
+	private long insertBooking(Connection con, ReservationDTO reservation, long id) throws SQLException {
+		PreparedStatement insertBookingStatement = con.prepareStatement(Helper.INSERT_BOOKING_QUERY,
+				Statement.RETURN_GENERATED_KEYS);
+		insertBookingStatement.setInt(1, reservation.getNumberOfTables());
+		insertBookingStatement.setLong(2, id);
+		insertBookingStatement.executeUpdate();
+		
+		ResultSet rsKeys = insertBookingStatement.getGeneratedKeys();
+		rsKeys.next();
+		long bookingId = rsKeys.getLong(1);
+		
+		return bookingId;
+	}
+	
+	private void updateSlot(Connection con, int freeTables, int wantedTables, long slotId) throws SQLException {
+		PreparedStatement ps = con.prepareStatement(Helper.UPDATE_SLOT_QUERY);
+		ps.setInt(1, freeTables-wantedTables);
+		ps.setLong(2, slotId);
+		ps.executeUpdate();
+	}
+	
+	private User getUserById(Connection con, long id) throws SQLException {
+		PreparedStatement st = con.prepareStatement("select u.*, a.street, c.name, a.country "
+				+ "from users u "
+				+ "join address a on(u.address_id = a.id) "
+				+ "join cities c on (a.city_id = c.id) "
+				+ " where u.id = ?;");
+		st.setLong(1, id);
+		ResultSet rs = st.executeQuery();
+		User user = null;
+		while(rs.next()) {
+			user = new User(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getString(4),
+					rs.getDate(5).toLocalDate(),
+					new Address(rs.getLong(6), rs.getString(8), rs.getString(9), rs.getString(10)),
+					rs.getInt(7));
+		}
+		
+		return user;
+	}
+	
+	private void updateAddress(Connection con, String street, long id) throws SQLException {
+		PreparedStatement streetStatement = con.prepareStatement("update address set street=? where id=?;");
+		streetStatement.setString(1, street);
+		streetStatement.setLong(2, id);
+		streetStatement.executeUpdate();
 	}
 	
 }
