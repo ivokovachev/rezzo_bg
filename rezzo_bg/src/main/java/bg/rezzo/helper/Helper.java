@@ -103,12 +103,12 @@ public class Helper {
 	public static final String GET_ALL_CLUBS_WITH_EVENTS_QUERY = "select p.id, p.name, m.genre, m.id, p.rating "
 				+ "from music m "
 				+ "join clubs c on (m.id = c.music_id) "
-				+ "join places p on (c.id = p.restaurant_id) "
+				+ "join places p on (c.id = p.club_id) "
 				+ "join events e on (p.id = e.place_id)";
 	public static final String GET_ALL_CLUBS_WITH_OFFERS_QUERY = "select p.id, p.name, m.genre, m.id, p.rating "
 				+ "from music m "
 				+ "join clubs c on (m.id = c.music_id) "
-				+ "join places p on (c.id = p.restaurant_id) "
+				+ "join places p on (c.id = p.club_id) "
 				+ "join offers o on (p.id = o.place_id)";
 	public static final String GET_RESTAURANTS_BY_CITY = "select p.id, p.name, p.start_working_day, p.end_working_day, p.rating, p.description, p.max_free_tables, a.street, a.country, ci.name, k.name\r\n" +
 			"from cities ci \r\n" + 
@@ -126,7 +126,7 @@ public class Helper {
 				+ "telephone=?, "
 				+ "date_of_birth=? "
 				+ "where id = ?;";
-	public static final String UPDATE_ADDRESS_QUERY = "update address set country=? where id=?;";
+	public static final String UPDATE_COUNTRY_QUERY = "update address set country=? where id=?;";
 	public static final String GET_CLUBS_BY_CITY = "select p.id, p.name, p.start_working_day, p.end_working_day, p.rating, p.description, p.max_free_tables, a.street, a.country, ci.name, m.genre\r\n" + 
 			"from cities ci \r\n" + 
 			"join address a on (ci.id = a.city_id)\r\n" + 
@@ -134,6 +134,13 @@ public class Helper {
 			"join clubs c on (p.club_id = c.id)\r\n" + 
 			"join music m on (c.music_id = m.id)\r\n" + 
 			"where ci.id = ?;";
+	public static final String UPDATE_STREET_QUERY = "update address set street=? where id=?;";
+	public static final String UPDATE_CITY_QUERY = "update address set city_id=?";
+	public static final String GET_CITY_ID = "select id "
+					+ "from cities "
+					+ "where name=?";
+	public static final String UPDATE_ADDRESS_CITY = "update address "
+						+ "set city_id=? where id=?";
 		
 	
 }

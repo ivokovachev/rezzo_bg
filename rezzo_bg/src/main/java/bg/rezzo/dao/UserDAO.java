@@ -123,10 +123,8 @@ public class UserDAO {
 		if(!(u.getAddress().getCity().equals(user.getCity()) || user.getCity().equals(""))) {
 			address.setCity(user.getCity());
 			u.setAddress(address);
-			PreparedStatement ps = con.prepareStatement("update address set city_id=?");
-			PreparedStatement getCityIdStatement = con.prepareStatement("select id "
-					+ "from cities "
-					+ "where name=?");
+			PreparedStatement ps = con.prepareStatement(Helper.UPDATE_CITY_QUERY);
+			PreparedStatement getCityIdStatement = con.prepareStatement(Helper.GET_CITY_ID);
 			getCityIdStatement.setString(1, user.getCity());
 			ResultSet rs2 = getCityIdStatement.executeQuery();
 			long cityId = -1;
@@ -134,8 +132,8 @@ public class UserDAO {
 				cityId = rs2.getLong(1);
 			}
 			if(cityId == -1) {
-				PreparedStatement insertCityStatement = con.prepareStatement("insert into cities "
-						+ "values(null, ?)", Statement.RETURN_GENERATED_KEYS);
+				PreparedStatement insertCityStatement = con.prepareStatement(Helper.INSERT_CITY,
+						Statement.RETURN_GENERATED_KEYS);
 				insertCityStatement.setString(1, user.getCity());
 				insertCityStatement.executeUpdate();
 				ResultSet cityKeys = insertCityStatement.getGeneratedKeys();
@@ -143,8 +141,7 @@ public class UserDAO {
 				while(cityKeys.next()) {
 					insertedCityId = cityKeys.getLong(1);
 				}
-				PreparedStatement updateAddressStatement = con.prepareStatement("update address "
-						+ "set city_id=? where id=?");
+				PreparedStatement updateAddressStatement = con.prepareStatement(Helper.UPDATE_CITY_QUERY);
 				updateAddressStatement.setLong(1, insertedCityId);
 				updateAddressStatement.setLong(2, u.getAddress().getId());
 				updateAddressStatement.executeUpdate();
@@ -156,18 +153,10 @@ public class UserDAO {
 		if(!(u.getAddress().getCountry().equals(user.getCountry()) || user.getCountry().equals(""))) {
 			address.setCountry(user.getCountry());
 			u.setAddress(address);
-			PreparedStatement streetStatement = con.prepareStatement(Helper.UPDATE_ADDRESS_QUERY);
-			streetStatement.setString(1, user.getCountry());
-			streetStatement.setLong(2, u.getAddress().getId());
-			streetStatement.executeUpdate();
+			this.updateCountry(con, user.getCountry(), u.getAddress().getId());
 		}
 		
-		PreparedStatement st2 = con.prepareStatement(Helper.UPDATE_USERS_QUERY);
-		st2.setString(1, u.getEmail());
-		st2.setString(2, u.getTelephone());
-		st2.setDate(3, java.sql.Date.valueOf(u.getDateOfBirth()));
-		st2.setLong(4, id);
-		st2.executeUpdate();
+		this.updateUser(con, u, id);
 		
 		return u;
 	}
@@ -715,8 +704,24 @@ public class UserDAO {
 	}
 	
 	private void updateAddress(Connection con, String street, long id) throws SQLException {
-		PreparedStatement streetStatement = con.prepareStatement("update address set street=? where id=?;");
+		PreparedStatement streetStatement = con.prepareStatement(Helper.UPDATE_STREET_QUERY);
 		streetStatement.setString(1, street);
+		streetStatement.setLong(2, id);
+		streetStatement.executeUpdate();
+	}
+
+	private void updateUser(Connection con, User u, long id) throws SQLException {
+		PreparedStatement st2 = con.prepareStatement(Helper.UPDATE_USERS_QUERY);
+		st2.setString(1, u.getEmail());
+		st2.setString(2, u.getTelephone());
+		st2.setDate(3, java.sql.Date.valueOf(u.getDateOfBirth()));
+		st2.setLong(4, id);
+		st2.executeUpdate();
+	}
+	
+	private void updateCountry(Connection con, String country, long id) throws SQLException {
+		PreparedStatement streetStatement = con.prepareStatement(Helper.UPDATE_COUNTRY_QUERY);
+		streetStatement.setString(1, country);
 		streetStatement.setLong(2, id);
 		streetStatement.executeUpdate();
 	}
